@@ -11,10 +11,10 @@ import Link from 'next/link';
 import toast from 'react-hot-toast';
 
 const products = [
-   { id: 'Ghost-stickers', name: 'Ghost QR Stickers', price: 29.00, image: '/GhostQR.png' },
-   { id: 'keychains', name: 'Ghost QR Keychain', price: 89.00, image: '/keychain_1.png' },
-   { id: 'travel-bundle', name: 'Ultimate Travel Kit', price: 369.00, image: '/bundle_mockup.png' },
-   { id: 'sticker-bundle', name: 'Sticker Bundle', price: 239.00, image: '/sticker_mockup.png' },
+   { id: 'Ghost-stickers', name: 'Returnji QR Stickers', price: 29.00, image: '/returnji_sticker.jpg' },
+   { id: 'keychains', name: 'Returnji QR Keychain', price: 89.00, image: '/returnji_keychain.jpg' },
+   { id: 'travel-bundle', name: 'Returnji Bundle', price: 369.00, image: '/returnji_bundle.jpg' },
+   { id: 'sticker-bundle', name: 'Returnji Student Bundle', price: 239.00, image: '/returnji_student_bundle.jpg' },
    { id: 'customize-sticker', name: 'Customize Your QR-Sticker', price: 29.00, image: 'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?auto=format&fit=crop&q=80&w=400' },
    { id: 'customize-keychain', name: 'Customize Your QR-Keychain', price: 129.00, image: 'https://images.unsplash.com/photo-1627384113972-f4c0392fe5aa?auto=format&fit=crop&q=80&w=400' },
 ];
@@ -119,6 +119,8 @@ export default function CheckoutPage() {
   };
 
   const currentTotal = selectedProduct ? selectedProduct.price : cartTotal;
+  const shipping = currentTotal >= 150 ? 0 : 80;
+  const finalTotal = currentTotal + shipping;
   const items = selectedProduct ? [selectedProduct] : cart;
 
   if (items.length === 0 && !loadingQrs) {
@@ -155,14 +157,14 @@ export default function CheckoutPage() {
                   <div key={idx} className="space-y-3 pb-6 border-b border-gray-50 last:border-0 last:pb-0">
                     <div className="flex gap-6 p-4 rounded-2xl bg-gray-50 border border-gray-100">
                       <div className="w-20 h-20 bg-white rounded-xl overflow-hidden border border-gray-200 flex-shrink-0">
-                        <img src={item.image} alt={item.name} className="w-full h-full object-contain p-2" />
+                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                       </div>
                       <div className="flex-1">
                         <div className="flex justify-between items-start">
                            <h3 className="font-bold text-gray-900">{item.name}</h3>
                            <span className="font-bold text-blue-800">₹{(item.price * quantity).toFixed(2)}</span>
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">Premium Ghost QR Hardware</p>
+                        <p className="text-xs text-gray-500 mt-1">Premium Returnji QR Hardware</p>
                         <div className="mt-3">
                            <span className="text-xs font-bold bg-white px-3 py-1 rounded-full text-gray-500 border border-gray-100">Qty: {quantity}</span>
                         </div>
@@ -219,7 +221,7 @@ export default function CheckoutPage() {
                    <ShieldCheck className="w-4 h-4 text-emerald-500" /> Buyer Protection
                 </h3>
                 <p className="text-xs text-gray-500 leading-relaxed">
-                   Your purchase is secured with Ghost 256-bit encryption. We ensure 100% genuine hardware.
+                   Your purchase is secured with Returnji 256-bit encryption. We ensure 100% genuine hardware.
                 </p>
              </div>
              <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
@@ -227,7 +229,7 @@ export default function CheckoutPage() {
                    <Package className="w-4 h-4 text-orange-500" /> Express Delivery
                 </h3>
                 <p className="text-xs text-gray-500 leading-relaxed">
-                   Free shipping on all GhostQR hardware. Delivery within 3-5 business days nationwide.
+                   Free shipping on all Returnji hardware. Delivery within 3-5 business days nationwide.
                 </p>
              </div>
           </div>
@@ -245,11 +247,15 @@ export default function CheckoutPage() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500 font-medium">Shipping & Handling</span>
-                <span className="text-emerald-600 font-bold text-[10px] uppercase tracking-widest px-2 py-0.5 bg-emerald-50 rounded-lg">Free</span>
+                {shipping === 0 ? (
+                  <span className="text-emerald-600 font-bold text-[10px] uppercase tracking-widest px-2 py-0.5 bg-emerald-50 rounded-lg">Free</span>
+                ) : (
+                  <span className="text-gray-900 font-bold">₹{shipping.toFixed(2)}</span>
+                )}
               </div>
               <div className="pt-6 border-t border-gray-50 flex justify-between items-end">
                 <span className="text-lg font-bold text-gray-900">Total Amount</span>
-                <span className="text-3xl font-black text-[#0f4bb9]">₹{currentTotal.toFixed(2)}</span>
+                <span className="text-3xl font-black text-[#0f4bb9]">₹{finalTotal.toFixed(2)}</span>
               </div>
             </div>
 

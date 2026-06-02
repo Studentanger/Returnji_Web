@@ -12,37 +12,37 @@ import toast from 'react-hot-toast';
 const products = [
    {
       id: 'Ghost-stickers',
-      name: 'Ghost QR Stickers',
+      name: 'Returnji QR Stickers',
       description: '1 weather-proof industrial grade sticker. Perfect for bottles, documents, backpacks and flat surfaces.',
       price: 29.00,
-      image: '/GhostQR.png', // Sticker representation
+      image: '/returnji_sticker.jpg', // Sticker representation
       badge: 'Best Seller',
       badgeColor: 'bg-teal-100 text-teal-700',
    },
    {
       id: 'keychains',
-      name: 'Ghost QR Keychain',
+      name: 'Returnji QR Keychain',
       description: 'Laser-etched aerospace-grade acrylic tag for keys and backpacks. Indestructible.',
       price: 89.00,
-      image: '/keychain_1.png', // keychain representation
+      image: '/returnji_keychain.jpg', // keychain representation
       badge: 'Premium',
       badgeColor: 'bg-indigo-100 text-indigo-700',
    },
    {
       id: 'travel-bundle',
-      name: 'Ultimate Travel Kit',
-      description: 'Includes 2 Ghost QR Keychains and 10 Ghost QR Stickers. Complete protection for your next trip.',
+      name: 'Returnji Bundle',
+      description: 'Includes 2 Returnji QR Keychains and 10 Returnji QR Stickers. Complete protection for your next trip.',
       price: 369.00,
-      image: '/bundle_mockup.png', // travel kit representation
+      image: '/returnji_bundle.jpg', // travel kit representation
       badge: 'Save 20%',
       badgeColor: 'bg-blue-100 text-blue-700',
    },
    {
       id: 'sticker-bundle',
-      name: 'Sticker Bundle',
+      name: 'Returnji Student Bundle',
       description: 'Pack of 10 weather-proof industrial grade stickers. Perfect for bottles, and flat surfaces.',
       price: 239,
-      image: 'sticker_mockup.png', // pet tag reference
+      image: '/returnji_student_bundle.jpg', // pet tag reference
       badge: 'Bundle Save 20%',
    },
    {
@@ -50,7 +50,7 @@ const products = [
       name: 'Customize Your QR-Sticker',
       description: 'Design your own QR sticker with custom colors, sizes, and more.',
       price: 29.00,
-      image: 'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?auto=format&fit=crop&q=80&w=400', // laptop back reference
+      image: '/returnji_custom_sticker.png', // laptop back reference
       badge: 'New Arrival',
       badgeColor: 'bg-emerald-100 text-emerald-700',
    },
@@ -59,7 +59,7 @@ const products = [
       name: 'Customize Your QR-Keychain',
       description: 'Design your own QR keychain with custom colors, sizes, and more.',
       price: 129.00,
-      image: 'https://images.unsplash.com/photo-1627384113972-f4c0392fe5aa?auto=format&fit=crop&q=80&w=400', // leather wallet reference
+      image: '/returnji_custom_keychain.png', // leather wallet reference
       badge: 'New Arrival',
       badgeColor: 'bg-emerald-100 text-emerald-700',
    },
@@ -261,20 +261,9 @@ export default function ShopPage() {
          {/* Footer Banner */}
          <div className="bg-gray-50 border-t border-gray-100 rounded-3xl p-12 text-center w-[calc(100%+32px)] -ml-4 sm:ml-0 sm:w-full">
             <h2 className="text-2xl font-bold text-gray-900 mb-3">Never lose anything again.</h2>
-            {/* <p className="text-gray-500 text-sm max-w-xl mx-auto mb-8 leading-relaxed">
-            Join <span className="font-bold text-gray-900">50,000+</span> users who trust Returnji to protect their valuables. Get 10% off your first order when you sign up.
-         </p> */}
 
-            <form className="max-w-md mx-auto flex gap-3">
-               <input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="flex-1 rounded-xl bg-white border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
-               />
-               <button type="button" className="bg-[#0f4bb9] text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-blue-800 transition-colors">
-                  Subscribe
-               </button>
-            </form>
+
+
          </div>
 
       </div>

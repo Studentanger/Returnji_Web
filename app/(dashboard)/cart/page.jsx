@@ -9,6 +9,8 @@ import toast from 'react-hot-toast';
 export default function CartPage() {
   const { cart, removeFromCart, updateQuantity, cartTotal, cartCount } = useCart();
   const router = useRouter();
+  const shipping = cartTotal >= 150 ? 0 : 80;
+  const finalTotal = cartTotal + shipping;
 
   if (cart.length === 0) {
     return (
@@ -43,7 +45,7 @@ export default function CartPage() {
           {cart.map((item) => (
             <div key={item.id} className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm flex flex-col sm:flex-row gap-6 hover:border-gray-200 transition-all">
               <div className="w-24 h-24 rounded-2xl bg-gray-50 flex-shrink-0 overflow-hidden border border-gray-100 relative">
-                <img src={item.image} alt={item.name} className="w-full h-full object-contain p-2" />
+                <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
               </div>
               
               <div className="flex-1 min-w-0">
@@ -77,22 +79,39 @@ export default function CartPage() {
           <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-xl shadow-blue-900/5">
             <h2 className="text-xl font-bold text-gray-900 mb-6">Order Summary</h2>
             
+            <div className="bg-gray-50 rounded-2xl p-4 mb-6 border border-gray-100/50">
+              <p className="text-[11px] text-gray-500 leading-normal text-center">
+                🚚 <span className="font-bold text-gray-700">Shipping Policy</span>: Free shipping on orders of <span className="font-bold text-[#0f4bb9]">₹150</span> and above. Under ₹150, shipping is <span className="font-bold text-gray-700">₹80</span>.
+              </p>
+            </div>
+
             <div className="space-y-4 mb-8">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500 font-medium">Subtotal ({cartCount} items)</span>
                 <span className="text-gray-900 font-bold">₹{cartTotal.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500 font-medium">Shipping</span>
-                <span className="text-emerald-600 font-bold uppercase tracking-widest text-[10px]">Free</span>
+              <div className="flex flex-col gap-1 pb-2 border-b border-gray-50">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500 font-medium">Shipping</span>
+                  {shipping === 0 ? (
+                    <span className="text-emerald-600 font-bold uppercase tracking-widest text-[10px] bg-emerald-50 px-2.5 py-0.5 rounded-lg">Free</span>
+                  ) : (
+                    <span className="text-gray-900 font-bold">₹{shipping.toFixed(2)}</span>
+                  )}
+                </div>
+                {shipping > 0 ? (
+                  <p className="text-[10px] text-gray-400 font-semibold text-right">
+                    Add <span className="text-[#0f4bb9]">₹{(150 - cartTotal).toFixed(2)}</span> more for Free Shipping!
+                  </p>
+                ) : (
+                  <p className="text-[10px] text-emerald-600 font-semibold text-right">
+                    Qualifies for Free Shipping!
+                  </p>
+                )}
               </div>
-              {/* <div className="flex justify-between text-sm">
-                <span className="text-gray-500 font-medium">Tax</span>
-                <span className="text-gray-900 font-bold">₹0.00</span>
-              </div> */}
-              <div className="pt-4 border-t border-gray-50 flex justify-between">
+              <div className="pt-4 flex justify-between">
                 <span className="text-lg font-bold text-gray-900">Total</span>
-                <span className="text-2xl font-black text-[#0f4bb9]">₹{cartTotal.toFixed(2)}</span>
+                <span className="text-2xl font-black text-[#0f4bb9]">₹{finalTotal.toFixed(2)}</span>
               </div>
             </div>
 

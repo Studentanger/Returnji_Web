@@ -20,11 +20,18 @@ export default function ProfilePage() {
     if (!user) return;
     const q = query(
       collection(db, 'activities'),
-      where('userId', '==', user.uid),
-      orderBy('timestamp', 'desc')
+      where('userId', '==', user.uid)
     );
     const unsub = onSnapshot(q, snap => {
-      setActivities(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      data.sort((a, b) => {
+        const timeA = a.timestamp?.toMillis ? a.timestamp.toMillis() : (a.timestamp ? new Date(a.timestamp).getTime() : 0);
+        const timeB = b.timestamp?.toMillis ? b.timestamp.toMillis() : (b.timestamp ? new Date(b.timestamp).getTime() : 0);
+        return timeB - timeA;
+      });
+      setActivities(data);
+    }, (err) => {
+      console.error("Error fetching activities:", err);
     });
     return () => unsub();
   }, [user]);
