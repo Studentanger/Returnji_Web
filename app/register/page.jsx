@@ -8,7 +8,7 @@ import { ShieldCheck, Mail, Lock, User, Eye, EyeOff, Phone } from 'lucide-react'
 import toast from 'react-hot-toast';
 
 export default function RegisterPage() {
-  const { register } = useAuth();
+  const { register, loginWithGoogle } = useAuth();
   const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -34,6 +34,24 @@ export default function RegisterPage() {
       }
     } catch (err) {
       toast.error(err.message.includes('email-already') ? 'Email already in use' : err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    try {
+      const data = await loginWithGoogle();
+      toast.success('Account created! Welcome to Returnji 🛡️');
+      if (data?.role === 'admin') {
+        router.push('/admin');
+      } else {
+        router.push('/dashboard');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message || 'Failed to register with Google');
     } finally {
       setLoading(false);
     }
@@ -184,6 +202,42 @@ export default function RegisterPage() {
                     Creating Account...
                   </span>
                 ) : 'Create Account'}
+              </button>
+
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-100" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-3 text-gray-400 font-bold tracking-wider">Or continue with</span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleGoogleLogin}
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-xl py-3 font-bold shadow-sm transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                <svg className="w-5 h-5" viewBox="0 0 24 24">
+                  <path
+                    fill="#EA4335"
+                    d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.67 1.62 15 1 12 1 7.28 1 3.25 3.73 1.34 7.72l3.86 3C6.12 7.74 8.84 5.04 12 5.04z"
+                  />
+                  <path
+                    fill="#4285F4"
+                    d="M23.49 12.27c0-.81-.07-1.59-.2-2.27H12v4.51h6.44c-.28 1.48-1.12 2.73-2.38 3.58l3.69 2.87c2.16-1.99 3.42-4.92 3.42-8.69z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.2 14.28a7.17 7.17 0 0 1 0-4.56l-3.86-3a11.96 11.96 0 0 0 0 10.56l3.86-3z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 23c3.24 0 5.97-1.07 7.96-2.91l-3.69-2.87c-1.02.68-2.33 1.09-3.96 1.09-3.16 0-5.88-2.7-6.8-5.96l-3.86 3C3.25 20.27 7.28 23 12 23z"
+                  />
+                </svg>
+                Google
               </button>
             </form>
 

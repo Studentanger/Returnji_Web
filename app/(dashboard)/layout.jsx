@@ -20,6 +20,11 @@ export default function DashboardLayout({ children }) {
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [isMobile, setIsMobile] = useState(false);
+  const [imgErr, setImgErr] = useState(false);
+
+  useEffect(() => {
+    setImgErr(false);
+  }, [userData]);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 1024);
@@ -201,8 +206,13 @@ export default function DashboardLayout({ children }) {
                 onClick={() => isMobile && setShowUserDropdown(!showUserDropdown)}
                 className="w-10 h-10 rounded-full bg-blue-100 border border-blue-200 flex items-center justify-center overflow-hidden cursor-pointer hover:ring-4 hover:ring-blue-50 transition-all group shadow-sm"
               >
-                {userData?.photoURL ? (
-                  <img src={userData.photoURL} alt="Avatar" className="w-full h-full object-cover" />
+                {!imgErr && (userData?.photoURL || userData?.photoUrl) ? (
+                  <img 
+                    src={userData.photoURL || userData?.photoUrl} 
+                    alt="Avatar" 
+                    className="w-full h-full object-cover" 
+                    onError={() => setImgErr(true)}
+                  />
                 ) : (
                   <User className="w-5 h-5 text-blue-600 group-hover:scale-110 transition-transform" />
                 )}

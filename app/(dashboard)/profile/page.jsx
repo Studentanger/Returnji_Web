@@ -14,6 +14,11 @@ export default function ProfilePage() {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [activities, setActivities] = useState([]);
+  const [imgErr, setImgErr] = useState(false);
+
+  useEffect(() => {
+    setImgErr(false);
+  }, [userData]);
   
   // Realtime Activities Fetch
   useEffect(() => {
@@ -87,7 +92,12 @@ export default function ProfilePage() {
           {/* Avatar */}
           <div className="relative shrink-0">
              <div className="w-32 h-32 rounded-[2rem] bg-gray-900 flex items-center justify-center overflow-hidden shadow-lg shadow-gray-200">
-                <img src={userData?.photoUrl || "https://img.freepik.com/free-vector/businessman-character-avatar-isolated_24877-60111.jpg"} alt="User Avatar" className="w-full h-full object-cover" />
+                <img 
+                  src={(!imgErr && (userData?.photoURL || userData?.photoUrl)) || "https://img.freepik.com/free-vector/businessman-character-avatar-isolated_24877-60111.jpg"} 
+                  alt="User Avatar" 
+                  className="w-full h-full object-cover" 
+                  onError={() => setImgErr(true)}
+                />
              </div>
              <button title="Edit Avatar" className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-blue-700 text-white flex items-center justify-center shadow-md hover:bg-blue-800 transition-colors border-2 border-white">
                 <Edit2 className="w-3.5 h-3.5" />

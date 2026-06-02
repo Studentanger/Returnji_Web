@@ -8,7 +8,9 @@ import {
   onAuthStateChanged,
   setPersistence,
   browserLocalPersistence,
-  browserSessionPersistence
+  browserSessionPersistence,
+  GoogleAuthProvider,
+  signInWithPopup
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
@@ -96,8 +98,38 @@ export function AuthProvider({ children }) {
     setUserData(null);
   };
 
+  const loginWithGoogle = async () => {
+    const provider = new GoogleAuthProvider();
+    const cred = await signInWithPopup(auth, provider);
+    const userRef = doc(db, 'users', cred.user.uid);
+    const docSnap = await getDoc(userRef);
+    
+    let currentuserData = null;
+    if (docSnap.exists()) {
+      currentuserData = docSnap.data();
+      if (cred.user.photoURL && currentuserData.photoURL !== cred.user.photoURL) {
+        await setDoc(userRef, { photoURL: cred.user.photoURL }, { merge: true });
+        currentuserData.photoURL = cred.user.photoURL;
+      }
+    } else {
+      currentuserData = {
+        uid: cred.user.uid,
+        name: cred.user.displayName || 'Google User',
+        email: cred.user.email,
+        phone: cred.user.phoneNumber || '',
+        photoURL: cred.user.photoURL || '',
+        ghostCoins: 0,
+        role: 'user',
+        createdAt: serverTimestamp(),
+      };
+      await setDoc(userRef, currentuserData);
+    }
+    setUserData(currentuserData);
+    return currentuserData;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, userData, loading, register, login, logout }}>
+    <AuthContext.Provider value={{ user, userData, loading, register, login, loginWithGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   );

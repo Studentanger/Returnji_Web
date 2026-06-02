@@ -7,7 +7,7 @@ import { Toaster } from 'react-hot-toast';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
-  title: 'GhostQR — Smart QR Recovery Platform',
+  title: 'Returnji — Smart QR Recovery Platform',
   description: 'Never lose your belongings again. Create smart QR codes and get them back.',
 };
 
