@@ -121,7 +121,7 @@ export default function AssetsPage() {
                     <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url(${qr.photoUrl})` }} />
                   ) : (
                     <div className="scale-[0.8]">
-                      <CircularQR value={`https://ghost-qr.vercel.app/scan/${qr.id}`} size={64} />
+                      <CircularQR value={`https://returnji-web.vercel.app/scan/${qr.id}`} size={64} />
                     </div>
                   )}
                 </div>

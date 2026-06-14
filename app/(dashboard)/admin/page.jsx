@@ -13,6 +13,7 @@ import {
 import clsx from 'clsx';
 import toast from 'react-hot-toast';
 import { QRCodeSVG } from 'qrcode.react';
+import { setDoc } from 'firebase/firestore';
 
 
 const statusBadge = (status, collection = 'qr') => {
@@ -46,6 +47,13 @@ export default function AdminPage() {
   const [newDzAddress, setNewDzAddress] = useState('');
   const [submittingDz, setSubmittingDz] = useState(false);
   const [fetchingCoords, setFetchingCoords] = useState(false);
+
+  // QR Generation State
+  const [generateModalOpen, setGenerateModalOpen] = useState(false);
+  const [generateType, setGenerateType] = useState('sticker'); // 'sticker' or 'keychain'
+  const [generateFrom, setGenerateFrom] = useState('');
+  const [generateTo, setGenerateTo] = useState('');
+  const [generatingQrs, setGeneratingQrs] = useState(false);
 
   useEffect(() => {
     if (!userData) return;
@@ -427,6 +435,37 @@ export default function AdminPage() {
     doc.save(`GhostQR-Invoice-${order.id.slice(0, 8)}.pdf`);
   };
 
+  const handleGenerateQrs = async (e) => {
+    e.preventDefault();
+    const from = parseInt(generateFrom);
+    const to = parseInt(generateTo);
+    if (isNaN(from) || isNaN(to) || from > to) return toast.error('Invalid range');
+    if (to - from + 1 > 50) return toast.error('Max 50 QRs per generation');
+    setGeneratingQrs(true);
+    try {
+      const prefix = generateType === 'sticker' ? 'st' : 'ky';
+      for (let i = from; i <= to; i++) {
+        const idStr = String(i).padStart(5, '0');
+        const docId = `${prefix}${idStr}`;
+        await setDoc(doc(db, 'qrcodes', docId), {
+          qrId: docId,
+          status: 'unregistered',
+          type: generateType,
+          createdAt: serverTimestamp()
+        });
+      }
+      toast.success(`Generated ${to - from + 1} QRs successfully`);
+      setGenerateModalOpen(false);
+      setGenerateFrom('');
+      setGenerateTo('');
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to generate QRs');
+    } finally {
+      setGeneratingQrs(false);
+    }
+  };
+
 
 
   if (!userData) return null;
@@ -438,7 +477,11 @@ export default function AdminPage() {
     { id: 'orders', label: 'Orders', icon: ShoppingBag, count: orders.length },
     { id: 'dropsubmissions', label: 'Drop Items', icon: PackageCheck, count: submissions.filter(s => s.status === 'pending').length },
     { id: 'dropzones', label: 'Dropzones', icon: MapPin, count: dropzones.length },
+    { id: 'generate_qr', label: 'Generate QR', icon: QrCode, count: 0 },
   ];
+
+  const maxStickerId = qrs.filter(q => q.id.startsWith('st')).reduce((max, q) => Math.max(max, parseInt(q.id.replace('st', '')) || 0), 0);
+  const maxKeychainId = qrs.filter(q => q.id.startsWith('ky')).reduce((max, q) => Math.max(max, parseInt(q.id.replace('ky', '')) || 0), 0);
 
   return (
     <div className="space-y-6">
@@ -590,7 +633,7 @@ export default function AdminPage() {
                             <span>PNG Tag</span>
                           </button>
                            <div className="hidden">
-                              <QRCodeSVG id={`qr-svg-${qr.id}`} value={`https://ghost-qr.vercel.app/scan/${qr.id}`} size={400} level="H" fgColor="#c9b79e" bgColor="#f1ede0" />
+                              <QRCodeSVG id={`qr-svg-${qr.id}`} value={`https://returnji-web.vercel.app/scan/${qr.id}`} size={400} level="H" fgColor="#c9b79e" bgColor="#f1ede0" />
                            </div>
                         </td>
                       </tr>
@@ -803,6 +846,100 @@ export default function AdminPage() {
                     })}
                   </tbody>
                 </table>
+              </div>
+            )}
+
+            {/* Generate QR Table */}
+            {tab === 'generate_qr' && (
+              <div className="p-6 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Stickers Section */}
+                  <div className="glass p-6 bg-white/50 border border-gray-100 flex flex-col items-center justify-center text-center">
+                    <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4 shadow-sm border border-blue-100">
+                      <QrCode className="w-8 h-8 text-blue-600" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">Stickers</h3>
+                    <p className="text-sm text-gray-500 mb-6">
+                      {maxStickerId > 0 ? `Highest generated: st${String(maxStickerId).padStart(5, '0')}` : 'No qr generated yet'}
+                    </p>
+                    <button
+                      onClick={() => { setGenerateType('sticker'); setGenerateModalOpen(true); }}
+                      className="px-6 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/30"
+                    >
+                      Generate Sticker QRs
+                    </button>
+                  </div>
+
+                  {/* Keychains Section */}
+                  <div className="glass p-6 bg-white/50 border border-gray-100 flex flex-col items-center justify-center text-center">
+                    <div className="w-16 h-16 rounded-2xl bg-teal-50 flex items-center justify-center mb-4 shadow-sm border border-teal-100">
+                      <Key className="w-8 h-8 text-teal-600" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">Keychains</h3>
+                    <p className="text-sm text-gray-500 mb-6">
+                      {maxKeychainId > 0 ? `Highest generated: ky${String(maxKeychainId).padStart(5, '0')}` : 'No qr generated yet'}
+                    </p>
+                    <button
+                      onClick={() => { setGenerateType('keychain'); setGenerateModalOpen(true); }}
+                      className="px-6 py-2.5 bg-teal-600 text-white text-sm font-bold rounded-xl hover:bg-teal-700 transition-colors shadow-lg shadow-teal-600/30"
+                    >
+                      Generate Keychain QRs
+                    </button>
+                  </div>
+                </div>
+
+                {/* Generate Modal Overlay */}
+                {generateModalOpen && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl relative">
+                      <button onClick={() => setGenerateModalOpen(false)} className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-900 transition-colors">
+                        <Trash2 className="w-5 h-5 opacity-0" /> {/* Spacer basically, we can use X icon but we didn't import it */}
+                        <span className="text-xl leading-none">&times;</span>
+                      </button>
+                      <h3 className="text-xl font-bold text-gray-900 mb-1 capitalize">Generate {generateType}s</h3>
+                      <p className="text-xs text-gray-500 mb-6">Enter sequence range (max 50 at a time).</p>
+                      
+                      <form onSubmit={handleGenerateQrs} className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">From Number</label>
+                            <input 
+                              type="number" 
+                              required 
+                              min="1"
+                              value={generateFrom}
+                              onChange={e => setGenerateFrom(e.target.value)}
+                              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                              placeholder="e.g. 1"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">To Number</label>
+                            <input 
+                              type="number" 
+                              required 
+                              min="1"
+                              value={generateTo}
+                              onChange={e => setGenerateTo(e.target.value)}
+                              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                              placeholder="e.g. 50"
+                            />
+                          </div>
+                        </div>
+                        <p className="text-[10px] text-gray-400 font-medium">
+                          Will generate IDs: {generateType === 'sticker' ? 'st' : 'ky'}{String(generateFrom || '1').padStart(5, '0')} to {generateType === 'sticker' ? 'st' : 'ky'}{String(generateTo || '50').padStart(5, '0')}
+                        </p>
+                        <button 
+                          type="submit" 
+                          disabled={generatingQrs}
+                          className="w-full bg-[#0f4bb9] text-white font-bold py-3 rounded-xl hover:bg-blue-800 transition-all shadow-md mt-2 disabled:opacity-50"
+                        >
+                          {generatingQrs ? 'Generating...' : 'Confirm Generate'}
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </>

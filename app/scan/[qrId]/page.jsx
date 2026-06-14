@@ -86,6 +86,10 @@ export default function ScanPage() {
 
         if (docSnap.exists()) {
           const data = docSnap.data();
+          if (data.status === 'unregistered') {
+            router.push(`/generate?qrId=${qrId}`);
+            return;
+          }
           if (data.status !== 'active') {
             setError('This tag is currently inactive.');
           } else {

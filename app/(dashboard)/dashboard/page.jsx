@@ -171,7 +171,7 @@ export default function DashboardPage() {
                         <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url(${qr.photoUrl})` }} />
                       ) : (
                         <div className="scale-[0.85]">
-                          <CircularQR value={`https://ghost-qr.vercel.app/scan/${qr.id}`} size={60} />
+                          <CircularQR value={`https://returnji-web.vercel.app/scan/${qr.id}`} size={60} />
                         </div>
                       )}
                     </div>

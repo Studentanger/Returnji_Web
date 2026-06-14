@@ -1,17 +1,19 @@
 'use client';
 
-import { useState } from 'react';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { Suspense, useState } from 'react';
+import { collection, addDoc, serverTimestamp, doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { QrCode, ArrowLeft, Shield, Package, Landmark, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 
-export default function GenerateQRPage() {
+function GenerateQRForm() {
   const { user } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const qrId = searchParams.get('qrId');
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     itemName: '',
@@ -26,17 +28,35 @@ export default function GenerateQRPage() {
     
     setLoading(true);
     try {
-      await addDoc(collection(db, 'qrcodes'), {
-        ownerId: user.uid,
-        itemName: formData.itemName || 'Unnamed Asset',
-        category: formData.category,
-        description: formData.description,
-        reward: Number(formData.reward) || 0,
-        status: 'created',
-        createdAt: serverTimestamp()
-      });
+      if (qrId) {
+        const docRef = doc(db, 'qrcodes', qrId);
+        const docSnap = await getDoc(docRef);
+        if (!docSnap.exists() || docSnap.data().status !== 'unregistered') {
+           setLoading(false);
+           return toast.error('Invalid or already registered QR code');
+        }
+        await updateDoc(docRef, {
+          ownerId: user.uid,
+          itemName: formData.itemName || 'Unnamed Asset',
+          category: formData.category,
+          description: formData.description,
+          reward: Number(formData.reward) || 0,
+          status: 'active',
+          registeredAt: serverTimestamp()
+        });
+      } else {
+        await addDoc(collection(db, 'qrcodes'), {
+          ownerId: user.uid,
+          itemName: formData.itemName || 'Unnamed Asset',
+          category: formData.category,
+          description: formData.description,
+          reward: Number(formData.reward) || 0,
+          status: 'created',
+          createdAt: serverTimestamp()
+        });
+      }
       
-      toast.success('Digital QR Profile created successfully!');
+      toast.success(qrId ? 'QR Profile claimed successfully!' : 'Digital QR Profile created successfully!');
       router.push('/dashboard');
     } catch (err) {
       console.error(err);
@@ -54,8 +74,8 @@ export default function GenerateQRPage() {
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Create Asset Profile</h1>
-          <p className="text-sm text-gray-500 font-medium mt-1">Register a new item to secure it with GhostQR</p>
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">{qrId ? 'Claim Pre-generated Asset' : 'Create Asset Profile'}</h1>
+          <p className="text-sm text-gray-500 font-medium mt-1">{qrId ? `Registering tag ${qrId}` : 'Register a new item to secure it with GhostQR'}</p>
         </div>
       </div>
 
@@ -132,7 +152,7 @@ export default function GenerateQRPage() {
               >
                 {loading ? 'Creating Profile...' : (
                   <>
-                    <QrCode className="w-5 h-5" /> Generate Digital QR Profile
+                    <QrCode className="w-5 h-5" /> {qrId ? 'Claim QR Profile' : 'Generate Digital QR Profile'}
                   </>
                 )}
               </button>
@@ -178,5 +198,13 @@ export default function GenerateQRPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function GenerateQRPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-gray-500">Loading form...</div>}>
+      <GenerateQRForm />
+    </Suspense>
   );
 }
