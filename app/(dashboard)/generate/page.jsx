@@ -75,7 +75,7 @@ function GenerateQRForm() {
         </Link>
         <div>
           <h1 className="text-3xl font-bold text-gray-900 tracking-tight">{qrId ? 'Claim Pre-generated Asset' : 'Create Asset Profile'}</h1>
-          <p className="text-sm text-gray-500 font-medium mt-1">{qrId ? `Registering tag ${qrId}` : 'Register a new item to secure it with GhostQR'}</p>
+          <p className="text-sm text-gray-500 font-medium mt-1">{qrId ? `Registering tag ${qrId}` : 'Register a new item to secure it with Returnji'}</p>
         </div>
       </div>
 

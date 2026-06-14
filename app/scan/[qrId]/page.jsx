@@ -16,6 +16,7 @@ export default function ScanPage() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [redirecting, setRedirecting] = useState(false);
   const [qrData, setQrData] = useState(null);
   const [startingChat, setStartingChat] = useState(false);
   const [locationCaptured, setLocationCaptured] = useState(false);
@@ -87,27 +88,31 @@ export default function ScanPage() {
         if (docSnap.exists()) {
           const data = docSnap.data();
           if (data.status === 'unregistered') {
+            setRedirecting(true);
+            setLoading(false); 
             router.push(`/generate?qrId=${qrId}`);
             return;
           }
           if (data.status !== 'active') {
             setError('This tag is currently inactive.');
+            setLoading(false);
           } else {
             setQrData(data);
+            setLoading(false);
           }
         } else {
           setError('Invalid tag QR code.');
+          setLoading(false);
         }
       } catch (err) {
         console.error('Error fetching QR data:', err);
         setError('Failed to load asset details.');
-      } finally {
         setLoading(false);
       }
     };
 
     fetchQRData();
-  }, [qrId]);
+  }, [qrId, router]);
 
   useEffect(() => {
     if (!qrData || locationCaptured || user?.uid === qrData.ownerId) return;
@@ -202,7 +207,18 @@ export default function ScanPage() {
     } else {
       handleDenied();
     }
-  }, [qrData, qrId, locationCaptured]);
+  }, [qrData, qrId, locationCaptured, user]);
+
+  if (redirecting) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#F8FAFC]">
+        <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-lg mb-6">
+          <Navigation className="w-8 h-8 text-[#0f4bb9] animate-bounce" />
+        </div>
+        <p className="text-gray-500 font-bold tracking-widest uppercase text-sm animate-pulse">Redirecting to Registration...</p>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

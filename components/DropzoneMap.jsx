@@ -44,14 +44,14 @@ export default function DropzoneMap({ dropzones = [], onSelectDropzone, submitti
 
   if (!mounted) {
     return (
-      <div className="w-full h-[400px] md:h-full min-h-[400px] rounded-2xl overflow-hidden border border-ghost-400 bg-ghost-800 shadow-2xl flex items-center justify-center">
+      <div className="w-full h-full min-h-[400px] rounded-2xl overflow-hidden border border-ghost-400 bg-ghost-800 shadow-2xl flex items-center justify-center">
         <span className="text-sm font-medium text-ghost-400 animate-pulse">Initializing Map Engine...</span>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-[400px] md:h-full min-h-[400px] rounded-2xl overflow-hidden border border-ghost-400 shadow-2xl relative z-0">
+    <div className="w-full h-full min-h-[400px] rounded-2xl overflow-hidden border border-ghost-400 shadow-2xl relative z-0">
       <MapContainer
         center={center}
         zoom={zoom}

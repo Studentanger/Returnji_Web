@@ -10,7 +10,6 @@ import Link from 'next/link';
 import toast from 'react-hot-toast';
 import CircularQR from '@/components/CircularQR';
 
-const DropzoneMap = dynamic(() => import('@/components/DropzoneMap'), { ssr: false, loading: () => <div className="w-full h-full rounded-2xl bg-gray-100 animate-pulse" /> });
 
 const statusBadge = (status) => {
   const map = { created: 'bg-blue-100 text-blue-700', printed: 'bg-yellow-100 text-yellow-700', active: 'bg-emerald-100 text-emerald-700' };
@@ -20,7 +19,7 @@ const statusBadge = (status) => {
 export default function DashboardPage() {
   const { user, userData } = useAuth();
   const [qrs, setQrs] = useState([]);
-  const [dropzones, setDropzones] = useState([]);
+
   const [loadingQrs, setLoadingQrs] = useState(true);
   const [openMenuId, setOpenMenuId] = useState(null);
 
@@ -69,17 +68,6 @@ export default function DashboardPage() {
     return () => unsubQr();
   }, [user]);
 
-  useEffect(() => {
-    const fetchDropzones = async () => {
-      try {
-        const dzSnap = await getDocs(collection(db, 'dropzones'));
-        setDropzones(dzSnap.docs.map(d => ({ id: d.id, ...d.data() })));
-      } catch (err) {
-        console.error('Error fetching dropzones:', err);
-      }
-    };
-    fetchDropzones();
-  }, []);
 
   return (
     <div className="max-w-6xl mx-auto space-y-10 pb-10">
@@ -235,22 +223,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Coverage Network Map */}
-          <div className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm relative overflow-hidden">
-            <div className="flex items-center justify-between mb-4 z-10 relative">
-              <div>
-                <h3 className="text-lg font-bold text-gray-900">Coverage Network</h3>
-                <p className="text-sm text-gray-500 font-medium tracking-tight">Active monitoring in your frequent locations</p>
-              </div>
-              <span className="bg-teal-50 text-teal-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
-                LIVE
-              </span>
-            </div>
-            <div className="h-64 rounded-2xl overflow-hidden border border-gray-100 relative bg-gray-100">
-              <DropzoneMap dropzones={dropzones} zoom={12} scrollWheelZoom={false} />
-            </div>
-          </div>
+
 
         </div>
 

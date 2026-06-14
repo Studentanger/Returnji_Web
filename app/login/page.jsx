@@ -28,7 +28,12 @@ export default function LoginPage() {
       }
 
       toast.success('Welcome back!');
-      if (data?.role === 'admin') {
+      const searchParams = new URLSearchParams(window.location.search);
+      const redirect = searchParams.get('redirect');
+
+      if (redirect) {
+        router.push(redirect);
+      } else if (data?.role === 'admin') {
         router.push('/admin');
       } else {
         router.push('/dashboard');
@@ -50,7 +55,13 @@ export default function LoginPage() {
     try {
       const data = await loginWithGoogle();
       toast.success('Welcome back!');
-      if (data?.role === 'admin') {
+      
+      const searchParams = new URLSearchParams(window.location.search);
+      const redirect = searchParams.get('redirect');
+
+      if (redirect) {
+        router.push(redirect);
+      } else if (data?.role === 'admin') {
         router.push('/admin');
       } else {
         router.push('/dashboard');
@@ -236,9 +247,16 @@ export default function LoginPage() {
 
             <p className="text-center text-sm text-gray-600 mt-8 font-medium">
               Are you new here?{' '}
-              <Link href="/register" className="font-bold text-[#0f4bb9] hover:text-blue-800 transition-colors">
+              <a 
+                href="#" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  router.push('/register' + window.location.search);
+                }}
+                className="font-bold text-[#0f4bb9] hover:text-blue-800 transition-colors"
+              >
                 Create an account
-              </Link>
+              </a>
             </p>
           </div>
         </div>

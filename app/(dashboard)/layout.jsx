@@ -83,7 +83,8 @@ export default function DashboardLayout({ children }) {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.replace('/login');
+      const currentUrl = window.location.pathname + window.location.search;
+      router.replace(`/login?redirect=${encodeURIComponent(currentUrl)}`);
     }
   }, [user, loading, router]);
 

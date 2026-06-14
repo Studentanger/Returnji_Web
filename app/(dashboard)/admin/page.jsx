@@ -125,14 +125,14 @@ export default function AdminPage() {
       // Auto-activate QR code if order is delivered
       if (status === 'delivered' && qrId) {
         await updateDoc(doc(db, 'qrcodes', qrId), { status: 'active' });
-        toast.success(`QR Profile ${qrId.slice(0, 6)} activated!`);
+        toast.success(`QR Profile ${qrId.slice(0, 8)} activated!`);
       }
 
       if (userId) {
         await addDoc(collection(db, 'notifications'), {
           userId,
           title: 'Order Status Updated',
-          message: `Your order for ${productType || 'item'} is now ${status}.${status === 'delivered' ? ' Your GhostQR is now ACTIVE!' : ''}`,
+          message: `Your order for ${productType || 'item'} is now ${status}.${status === 'delivered' ? ' Your Returnji is now ACTIVE!' : ''}`,
           type: 'order',
           read: false,
           timestamp: serverTimestamp()
@@ -255,7 +255,7 @@ export default function AdminPage() {
       await addDoc(collection(db, 'notifications'), {
         userId: submission.ownerId,
         title: 'Item Recovered!',
-        message: `Your item "${submission.itemName}" has been successfully returned to you. Your GhostQR is now ACTIVE!`,
+        message: `Your item "${submission.itemName}" has been successfully returned to you. Your Returnji is now ACTIVE!`,
         type: 'qr',
         read: false,
         timestamp: serverTimestamp()
@@ -294,7 +294,7 @@ export default function AdminPage() {
     const svgMarkup = svgData.includes('xmlns="http://www.w3.org/2000/svg"')
       ? svgData
       : svgData.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
-    const fileName = `GhostQR-${sanitizeFilePart(itemName)}-${qrId.slice(0, 6)}.svg`;
+    const fileName = `Returnji-${sanitizeFilePart(itemName)}-${qrId.slice(0, 8)}.svg`;
     const blob = new Blob([svgMarkup], { type: 'image/svg+xml;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -376,7 +376,7 @@ export default function AdminPage() {
     // Header
     doc.setFontSize(22);
     doc.setTextColor(124, 58, 237); // Ghost purple
-    doc.text("GHOST QR - INVOICE", 105, 20, { align: "center" });
+    doc.text("RETURNJI - INVOICE", 105, 20, { align: "center" });
 
     doc.setFontSize(10);
     doc.setTextColor(100);
@@ -430,9 +430,9 @@ export default function AdminPage() {
     // Ghost Footer
     doc.setFontSize(9);
     doc.setTextColor(150);
-    doc.text("Thank you for choosing GhostQR. Protecting your belongings, invisibly.", 105, 280, { align: "center" });
+    doc.text("Thank you for choosing Returnji. Protecting your belongings, invisibly.", 105, 280, { align: "center" });
 
-    doc.save(`GhostQR-Invoice-${order.id.slice(0, 8)}.pdf`);
+    doc.save(`Returnji-Invoice-${order.id.slice(0, 8)}.pdf`);
   };
 
   const handleGenerateQrs = async (e) => {

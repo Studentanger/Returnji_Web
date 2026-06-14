@@ -18,7 +18,8 @@ import {
   Menu,
   X,
   ShieldCheck,
-  ShoppingCart
+  ShoppingCart,
+  MapPin
 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import clsx from 'clsx';
@@ -28,6 +29,7 @@ const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/chats', icon: MessageSquare, label: 'Chats' },
   { href: '/shop', icon: ShoppingBag, label: 'Shop' },
+  { href: '/dropzones', icon: MapPin, label: 'Dropzones' },
   { href: '/notifications', icon: Bell, label: 'Notifications' },
   { href: '/profile', icon: User, label: 'Profile' },
 ];
