@@ -18,13 +18,13 @@ import { setDoc } from 'firebase/firestore';
 
 const statusBadge = (status, collection = 'qr') => {
   const map = {
-    created:   'status-created',
-    printed:   'status-printed',
+    created: 'status-created',
+    printed: 'status-printed',
     delivered: 'status-delivered',
-    pending:   'status-pending',
-    ready:     'status-ready',
-    user:      'bg-blue-50 text-blue-700',
-    admin:     'bg-yellow-100 text-yellow-700',
+    pending: 'status-pending',
+    ready: 'status-ready',
+    user: 'bg-blue-50 text-blue-700',
+    admin: 'bg-yellow-100 text-yellow-700',
   };
   return <span className={`badge ${map[status] || 'status-created'}`}>{status}</span>;
 };
@@ -54,6 +54,7 @@ export default function AdminPage() {
   const [generateFrom, setGenerateFrom] = useState('');
   const [generateTo, setGenerateTo] = useState('');
   const [generatingQrs, setGeneratingQrs] = useState(false);
+  const [generatingZip, setGeneratingZip] = useState(false);
 
   useEffect(() => {
     if (!userData) return;
@@ -88,19 +89,19 @@ export default function AdminPage() {
       }
     );
 
-    return () => { 
-      unsubUsers(); unsubQrs(); unsubOrders(); unsubDropzones(); unsubSubmissions(); 
+    return () => {
+      unsubUsers(); unsubQrs(); unsubOrders(); unsubDropzones(); unsubSubmissions();
     };
   }, [userData, router]);
 
   const updateQrStatus = async (id, ownerId, itemName, status) => {
     try {
       await updateDoc(doc(db, 'qrcodes', id), { status });
-      
+
       if (ownerId) {
         let displayStatus = status;
         if (status === 'printed') displayStatus = 'ready';
-        
+
         await addDoc(collection(db, 'notifications'), {
           userId: ownerId,
           title: 'Product Status Updated',
@@ -110,7 +111,7 @@ export default function AdminPage() {
           timestamp: serverTimestamp()
         });
       }
-      
+
       toast.success(`QR status → ${status}`);
     } catch (err) {
       console.error(err);
@@ -121,7 +122,7 @@ export default function AdminPage() {
   const updateOrderStatus = async (orderId, userId, productType, status, qrId) => {
     try {
       await updateDoc(doc(db, 'orders', orderId), { status });
-      
+
       // Auto-activate QR code if order is delivered
       if (status === 'delivered' && qrId) {
         await updateDoc(doc(db, 'qrcodes', qrId), { status: 'active' });
@@ -200,7 +201,7 @@ export default function AdminPage() {
     try {
       // 1. Generate new OTP for Owner
       const ownerOtp = Math.floor(100000 + Math.random() * 900000).toString();
-      
+
       // 2. Update submission status
       await updateDoc(doc(db, 'dropSubmissions', submission.id), {
         status: 'received',
@@ -308,7 +309,7 @@ export default function AdminPage() {
 
   const downloadTag = async (qr) => {
     const ownerName = users.find(u => u.id === qr.ownerId)?.name || 'Ghost User';
-    
+
     const svg = document.getElementById(`qr-svg-${qr.id}`);
     if (!svg) return toast.error('QR code not found');
 
@@ -322,24 +323,25 @@ export default function AdminPage() {
 
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    
+
     const img = new Image();
     img.crossOrigin = "anonymous";
-    img.src = '/template.png';
+    img.src = '/sticker_new.png';
 
     img.onload = () => {
       canvas.width = img.width;
       canvas.height = img.height;
-      
+
       ctx.drawImage(img, 0, 0);
 
       const qrImg = new Image();
       qrImg.onload = () => {
-        // New RETURNJI dimensions (assume 100mm template)
-        const mmToPx = canvas.width / 100;
-        const qrSize = 40 * mmToPx;
-        const x = 30 * mmToPx;
-        const y = 30 * mmToPx;
+        // The sticker_new.png design is exactly 2 inches wide
+        const dpi = canvas.width / 2.0;
+        const qrSize = 0.68 * dpi;
+        const x = 0.76 * dpi;
+        const y = 0.76 * dpi;
+
         const rotateRad = 0; // Rotate 0 as requested
 
         ctx.save();
@@ -352,20 +354,94 @@ export default function AdminPage() {
 
         ctx.drawImage(qrImg, -qrSize / 2, -qrSize / 2, qrSize, qrSize);
         ctx.restore();
-        
+
         // Removed owner name text as per new template
 
         const finalUrl = canvas.toDataURL('image/png');
         const link = document.createElement('a');
         link.href = finalUrl;
-        link.download = `Returnji-Tag-${sanitizeFilePart(qr.itemName)}-${sanitizeFilePart(ownerName)}.png`;
+        const typeStr = qr.type || (qr.id.startsWith('st') ? 'sticker' : 'keychain');
+        link.download = `Returnji-${typeStr}-${qr.id}.png`;
         link.click();
-        
+
         URL.revokeObjectURL(qrUrl);
       };
       qrImg.src = qrUrl;
     };
-    img.onerror = () => toast.error('Please save template.png to the public folder first!');
+    img.onerror = () => toast.error('Please save template.png or sticker_new.png to the public folder first!');
+  };
+
+  const downloadAllTagsAsZip = async (currentFilteredQrs, tabName) => {
+    if (currentFilteredQrs.length === 0) return toast.error('No tags to download');
+
+    setGeneratingZip(true);
+    try {
+      const JSZip = (await import('jszip')).default;
+      const { saveAs } = await import('file-saver');
+      const zip = new JSZip();
+
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.src = '/sticker_new.png';
+
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = () => reject(new Error('Template image not found'));
+      });
+
+      for (const qr of currentFilteredQrs) {
+        const svg = document.getElementById(`qr-svg-${qr.id}`);
+        if (!svg) continue;
+
+        const svgData = new window.XMLSerializer().serializeToString(svg);
+        const svgMarkup = svgData.includes('xmlns="http://www.w3.org/2000/svg"')
+          ? svgData
+          : svgData.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+
+        const qrBlob = new Blob([svgMarkup], { type: 'image/svg+xml;charset=utf-8' });
+        const qrUrl = URL.createObjectURL(qrBlob);
+
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+
+        const qrImg = new Image();
+        qrImg.src = qrUrl;
+
+        await new Promise((resolve) => {
+          qrImg.onload = () => {
+            const dpi = canvas.width / 2.0;
+            const qrSize = 0.68 * dpi;
+            const x = 0.76 * dpi;
+            const y = 0.76 * dpi;
+
+            ctx.save();
+            ctx.translate(x + qrSize / 2, y + qrSize / 2);
+            ctx.drawImage(qrImg, -qrSize / 2, -qrSize / 2, qrSize, qrSize);
+            ctx.restore();
+
+            const finalUrl = canvas.toDataURL('image/png');
+            const base64Data = finalUrl.replace(/^data:image\/png;base64,/, "");
+            const typeStr = qr.type || (qr.id.startsWith('st') ? 'sticker' : 'keychain');
+            zip.file(`Returnji-${typeStr}-${qr.id}.png`, base64Data, { base64: true });
+            URL.revokeObjectURL(qrUrl);
+            resolve();
+          };
+        });
+      }
+
+      const content = await zip.generateAsync({ type: 'blob' });
+      saveAs(content, `Returnji-Tags-${tabName}.zip`);
+      toast.success('Downloaded ZIP successfully');
+
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to generate ZIP');
+    } finally {
+      setGeneratingZip(false);
+    }
   };
 
   const downloadOrderBill = async (order) => {
@@ -421,7 +497,7 @@ export default function AdminPage() {
 
     // Footer divider
     doc.line(20, 120, 190, 120);
-    
+
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
     doc.text("Total Amount:", 130, 130);
@@ -473,7 +549,8 @@ export default function AdminPage() {
 
   const tabs = [
     { id: 'users', label: 'Users', icon: Users, count: users.length },
-    { id: 'qrcodes', label: 'QR Codes', icon: QrCode, count: qrs.length },
+    { id: 'qr_stickers', label: 'Stickers', icon: QrCode, count: qrs.filter(q => q.type === 'sticker' || q.id.startsWith('st')).length },
+    { id: 'qr_keychains', label: 'Keychains', icon: QrCode, count: qrs.filter(q => q.type === 'keychain' || q.id.startsWith('ky')).length },
     { id: 'orders', label: 'Orders', icon: ShoppingBag, count: orders.length },
     { id: 'dropsubmissions', label: 'Drop Items', icon: PackageCheck, count: submissions.filter(s => s.status === 'pending').length },
     { id: 'dropzones', label: 'Dropzones', icon: MapPin, count: dropzones.length },
@@ -542,7 +619,7 @@ export default function AdminPage() {
       <div className="glass overflow-hidden">
         {loading ? (
           <div className="p-8 space-y-3">
-            {[1,2,3,4].map(i => (
+            {[1, 2, 3, 4].map(i => (
               <div key={i} className="h-12 bg-gray-100 rounded-lg animate-pulse" />
             ))}
           </div>
@@ -582,64 +659,79 @@ export default function AdminPage() {
             )}
 
             {/* QR Codes Table */}
-            {tab === 'qrcodes' && (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-gray-50 border-b border-gray-100">
-                      <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-widest">Item Info</th>
-                      <th className="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-widest">Status</th>
-                      <th className="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-widest">Reward</th>
-                      <th className="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-widest">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {qrs.map(qr => (
-                      <tr key={qr.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-5 py-4">
-                          <p className="font-medium text-gray-900">{qr.itemName}</p>
-                          <p className="text-xs text-gray-500 font-medium">{users.find(u => u.id === qr.ownerId)?.name || 'Ghost User'}</p>
-                        </td>
-                        <td className="px-5 py-4 text-center">
-                          <select
-                            value={qr.status}
-                            onChange={(e) => updateQrStatus(qr.id, qr.ownerId, qr.itemName, e.target.value)}
-                            className="text-xs font-bold bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-gray-700 cursor-pointer hover:border-blue-400 transition-colors focus:ring-2 focus:ring-blue-100 outline-none"
-                          >
-                            <option value="created">created</option>
-                            <option value="printed">printed</option>
-                            <option value="active">active</option>
-                            <option value="found">found</option>
-                            <option value="deactivated">deactivated</option>
-                          </select>
-                        </td>
-                        <td className="px-5 py-4 text-center text-yellow-600 font-medium">{qr.reward || 0} 🪙</td>
-                        <td className="px-5 py-4 flex items-center justify-end gap-3">
-
-                          <button
-                            onClick={() => downloadQR(qr.id, qr.itemName)}
-                            className="inline-flex items-center gap-2 rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-500 hover:bg-gray-200 hover:text-gray-900 transition-colors"
-                            title="Download SVG"
-                          >
-                            <Download className="w-4 h-4" />
-                            <span>SVG</span>
-                          </button>
-                          <button
-                            onClick={() => downloadTag(qr)}
-                            className="inline-flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-700 hover:bg-blue-100 transition-colors shadow-sm"
-                            title="Download Templated PNG"
-                          >
-                            <Download className="w-4 h-4" />
-                            <span>PNG Tag</span>
-                          </button>
-                           <div className="hidden">
-                              <QRCodeSVG id={`qr-svg-${qr.id}`} value={`https://returnji-web.vercel.app/scan/${qr.id}`} size={400} level="H" fgColor="#c9b79e" bgColor="#f1ede0" />
-                           </div>
-                        </td>
+            {(tab === 'qr_stickers' || tab === 'qr_keychains') && (
+              <div className="space-y-4">
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => {
+                      const filteredQrs = tab === 'qr_stickers' ? qrs.filter(q => q.type === 'sticker' || q.id.startsWith('st')) : qrs.filter(q => q.type === 'keychain' || q.id.startsWith('ky'));
+                      downloadAllTagsAsZip(filteredQrs, tab);
+                    }}
+                    disabled={generatingZip}
+                    className="inline-flex items-center gap-2 rounded-lg bg-[#0f4bb9] px-4 py-2 text-sm font-bold text-white hover:bg-blue-800 transition-colors shadow-sm disabled:opacity-50"
+                  >
+                    <Download className={clsx("w-4 h-4", generatingZip && "animate-bounce")} />
+                    <span>{generatingZip ? 'Bundling ZIP...' : `Download All ${tab === 'qr_stickers' ? 'Sticker' : 'Keychain'} Tags`}</span>
+                  </button>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-gray-50 border-b border-gray-100">
+                        <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-widest">Item Info</th>
+                        <th className="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-widest">Status</th>
+                        <th className="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-widest">Reward</th>
+                        <th className="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-widest">Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {(tab === 'qr_stickers' ? qrs.filter(q => q.type === 'sticker' || q.id.startsWith('st')) : qrs.filter(q => q.type === 'keychain' || q.id.startsWith('ky'))).map(qr => (
+                        <tr key={qr.id} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-5 py-4">
+                            <p className="font-medium text-gray-900">{qr.itemName}</p>
+                            <p className="text-xs text-gray-500 font-medium">{users.find(u => u.id === qr.ownerId)?.name || 'Ghost User'}</p>
+                          </td>
+                          <td className="px-5 py-4 text-center">
+                            <select
+                              value={qr.status}
+                              onChange={(e) => updateQrStatus(qr.id, qr.ownerId, qr.itemName, e.target.value)}
+                              className="text-xs font-bold bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-gray-700 cursor-pointer hover:border-blue-400 transition-colors focus:ring-2 focus:ring-blue-100 outline-none"
+                            >
+                              <option value="created">created</option>
+                              <option value="printed">printed</option>
+                              <option value="active">active</option>
+                              <option value="found">found</option>
+                              <option value="deactivated">deactivated</option>
+                            </select>
+                          </td>
+                          <td className="px-5 py-4 text-center text-yellow-600 font-medium">{qr.reward || 0} 🪙</td>
+                          <td className="px-5 py-4 flex items-center justify-end gap-3">
+
+                            <button
+                              onClick={() => downloadQR(qr.id, qr.itemName)}
+                              className="inline-flex items-center gap-2 rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-500 hover:bg-gray-200 hover:text-gray-900 transition-colors"
+                              title="Download SVG"
+                            >
+                              <Download className="w-4 h-4" />
+                              <span>SVG</span>
+                            </button>
+                            <button
+                              onClick={() => downloadTag(qr)}
+                              className="inline-flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-700 hover:bg-blue-100 transition-colors shadow-sm"
+                              title="Download Templated PNG"
+                            >
+                              <Download className="w-4 h-4" />
+                              <span>PNG Tag</span>
+                            </button>
+                            <div className="hidden">
+                              <QRCodeSVG id={`qr-svg-${qr.id}`} value={`https://returnji-web.vercel.app/scan/${qr.id}`} size={400} level="H" fgColor="#000000" bgColor="#f1ede0" />
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 
@@ -735,31 +827,31 @@ export default function AdminPage() {
                         <div>
                           <label className="block text-[10px] font-semibold text-gray-500 mb-1 uppercase tracking-wider">Location Keywords</label>
                           <div className="flex gap-2">
-                            <input required value={newDzName} onChange={e=>setNewDzName(e.target.value)} className="ghost-input py-2 text-sm flex-1" placeholder="e.g. SRM University, Chennai" />
-                             <button 
-                              type="button" 
+                            <input required value={newDzName} onChange={e => setNewDzName(e.target.value)} className="ghost-input py-2 text-sm flex-1" placeholder="e.g. SRM University, Chennai" />
+                            <button
+                              type="button"
                               onClick={fetchCoordinates}
                               disabled={fetchingCoords}
                               className="p-2 rounded-lg bg-white border border-gray-200 hover:border-ghost-accent text-blue-700 hover:text-blue-600 transition-all disabled:opacity-50 shadow-sm"
                               title="Fetch Coordinates"
                             >
-                               <Search className={clsx("w-4 h-4", fetchingCoords && "animate-spin")} />
+                              <Search className={clsx("w-4 h-4", fetchingCoords && "animate-spin")} />
                             </button>
                           </div>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                           <div>
                             <label className="block text-[10px] font-semibold text-gray-500 mb-1 uppercase tracking-wider">Latitude</label>
-                            <input required type="number" step="any" value={newDzLat} onChange={e=>setNewDzLat(e.target.value)} className="ghost-input py-2 text-sm font-mono" placeholder="Auto-filled" />
+                            <input required type="number" step="any" value={newDzLat} onChange={e => setNewDzLat(e.target.value)} className="ghost-input py-2 text-sm font-mono" placeholder="Auto-filled" />
                           </div>
                           <div>
                             <label className="block text-[10px] font-semibold text-gray-500 mb-1 uppercase tracking-wider">Longitude</label>
-                            <input required type="number" step="any" value={newDzLng} onChange={e=>setNewDzLng(e.target.value)} className="ghost-input py-2 text-sm font-mono" placeholder="Auto-filled" />
+                            <input required type="number" step="any" value={newDzLng} onChange={e => setNewDzLng(e.target.value)} className="ghost-input py-2 text-sm font-mono" placeholder="Auto-filled" />
                           </div>
                         </div>
                         <div>
                           <label className="block text-[10px] font-semibold text-gray-500 mb-1 uppercase tracking-wider">Address Context (Optional)</label>
-                          <textarea value={newDzAddress} onChange={e=>setNewDzAddress(e.target.value)} className="ghost-input py-2 text-sm min-h-[60px]" placeholder="Specific instructions for finding the drop box..." />
+                          <textarea value={newDzAddress} onChange={e => setNewDzAddress(e.target.value)} className="ghost-input py-2 text-sm min-h-[60px]" placeholder="Specific instructions for finding the drop box..." />
                         </div>
                         <button type="submit" disabled={submittingDz} className="btn-ghost w-full py-2 text-sm disabled:opacity-60">
                           {submittingDz ? 'Adding...' : 'Add Dropzone'}
@@ -898,14 +990,14 @@ export default function AdminPage() {
                       </button>
                       <h3 className="text-xl font-bold text-gray-900 mb-1 capitalize">Generate {generateType}s</h3>
                       <p className="text-xs text-gray-500 mb-6">Enter sequence range (max 50 at a time).</p>
-                      
+
                       <form onSubmit={handleGenerateQrs} className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">From Number</label>
-                            <input 
-                              type="number" 
-                              required 
+                            <input
+                              type="number"
+                              required
                               min="1"
                               value={generateFrom}
                               onChange={e => setGenerateFrom(e.target.value)}
@@ -915,9 +1007,9 @@ export default function AdminPage() {
                           </div>
                           <div>
                             <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">To Number</label>
-                            <input 
-                              type="number" 
-                              required 
+                            <input
+                              type="number"
+                              required
                               min="1"
                               value={generateTo}
                               onChange={e => setGenerateTo(e.target.value)}
@@ -929,8 +1021,8 @@ export default function AdminPage() {
                         <p className="text-[10px] text-gray-400 font-medium">
                           Will generate IDs: {generateType === 'sticker' ? 'st' : 'ky'}{String(generateFrom || '1').padStart(5, '0')} to {generateType === 'sticker' ? 'st' : 'ky'}{String(generateTo || '50').padStart(5, '0')}
                         </p>
-                        <button 
-                          type="submit" 
+                        <button
+                          type="submit"
                           disabled={generatingQrs}
                           className="w-full bg-[#0f4bb9] text-white font-bold py-3 rounded-xl hover:bg-blue-800 transition-all shadow-md mt-2 disabled:opacity-50"
                         >
