@@ -7,8 +7,11 @@ import { Toaster } from 'react-hot-toast';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
-  title: 'Returnji — Smart QR Recovery Platform',
+  title: 'Returnji - Helping Lost Items Find Their Way Home',
   description: 'Never lose your belongings again. Create smart QR codes and get them back.',
+  icons: {
+    icon: '/web_logo.png',
+  },
 };
 
 export default function RootLayout({ children }) {
