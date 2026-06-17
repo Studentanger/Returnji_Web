@@ -107,7 +107,7 @@ export default function RegisterPage() {
         <div className="w-full max-w-md animate-fade-in relative z-10 my-auto py-8">
 
           {/* Mobile Header (only visible on small screens) */}
-          <div className="md:hidden flex items-center justify-center mb-56 -mt-16">
+          <div className="md:hidden flex items-center justify-center mb-20 -mt-16">
             <img src="/logo.png" alt="Returnji Logo" className="h-20 w-auto" />
           </div>
 

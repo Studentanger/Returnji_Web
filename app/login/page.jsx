@@ -117,7 +117,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md animate-fade-in relative z-10">
 
           {/* Mobile Header (only visible on small screens) */}
-          <div className="md:hidden flex items-center justify-center mb-60 -mt-2">
+          <div className="md:hidden flex items-center justify-center mb-20 -mt-2">
             <img src="/logo.png" alt="Returnji Logo" className="h-20 w-auto" />
           </div>
 
