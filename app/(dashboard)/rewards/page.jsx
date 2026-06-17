@@ -56,7 +56,7 @@ export default function RewardsPage() {
 
   return (
     <div className="max-w-6xl mx-auto pb-10">
-      <div className="bg-[#0f4bb9] rounded-[2rem] p-8 md:p-12 text-white relative overflow-hidden shadow-xl shadow-blue-900/20 mb-10">
+      <div className="bg-[#3b5034] rounded-[2rem] p-8 md:p-12 text-white relative overflow-hidden shadow-xl shadow-blue-900/20 mb-10">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4" />
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
            <div>
@@ -98,7 +98,7 @@ export default function RewardsPage() {
                      disabled={redeeming === reward.id || ghostCoins < reward.price}
                      className={`w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 ${
                         ghostCoins >= reward.price 
-                        ? 'bg-[#0f4bb9] hover:bg-blue-800 text-white shadow-md hover:shadow-lg disabled:opacity-70' 
+                        ? 'bg-[#3b5034] hover:bg-blue-800 text-white shadow-md hover:shadow-lg disabled:opacity-70' 
                         : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                      }`}
                    >

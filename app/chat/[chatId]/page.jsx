@@ -5,9 +5,10 @@ import { useParams, useRouter } from 'next/navigation';
 import { doc, getDoc, collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp, updateDoc, setDoc, increment } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
-import { Send, ArrowLeft, AlertCircle, ShieldCheck, MessageCircle, CheckCircle, User, Info, MoreVertical } from 'lucide-react';
+import { Send, ArrowLeft, AlertCircle, ShieldCheck, MessageCircle, CheckCircle, User, Info, MoreVertical, Smile } from 'lucide-react';
 import clsx from 'clsx';
 import toast from 'react-hot-toast';
+import EmojiPicker from 'emoji-picker-react';
 
 function formatMessageTime(ts) {
   if (!ts?.toDate) return 'Sending...';
@@ -59,6 +60,11 @@ export default function ChatPage() {
   const [confirmingReward, setConfirmingReward] = useState(false);
   const [itemReturned, setItemReturned] = useState(false);
   const messagesEndRef = useRef(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
+  const onEmojiClick = (emojiObject) => {
+    setNewMessage(prevInput => prevInput + emojiObject.emoji);
+  };
 
   useEffect(() => {
     // Determine the current user's ID
@@ -112,7 +118,8 @@ export default function ChatPage() {
         ...doc.data()
       }));
       // Client-side sort to avoid index requirements during dev
-      msgs.sort((a, b) => (a.timestamp?.toMillis() || 0) - (b.timestamp?.toMillis() || 0));
+      const getMs = (t) => t?.toMillis ? t.toMillis() : Number.MAX_SAFE_INTEGER;
+      msgs.sort((a, b) => getMs(a.timestamp) - getMs(b.timestamp));
       setMessages(msgs);
       scrollToBottom();
     }, (err) => {
@@ -200,6 +207,7 @@ export default function ChatPage() {
 
     const messageText = newMessage.trim();
     setNewMessage('');
+    setShowEmojiPicker(false);
     setSending(true);
 
     try {
@@ -236,9 +244,9 @@ export default function ChatPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[#F8FAFC]">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#ede8de]">
         <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-lg mb-6">
-           <ShieldCheck className="w-8 h-8 text-[#0f4bb9] animate-pulse" />
+           <ShieldCheck className="w-8 h-8 text-[#3b5034] animate-pulse" />
         </div>
         <p className="text-gray-500 font-bold tracking-widest uppercase text-sm animate-pulse">Securing Connection...</p>
       </div>
@@ -247,7 +255,7 @@ export default function ChatPage() {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[#F8FAFC] p-6 text-center">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#ede8de] p-6 text-center">
         <div className="w-20 h-20 bg-white rounded-[2rem] flex items-center justify-center shadow-xl border border-gray-100 mb-6">
            <AlertCircle className="w-10 h-10 text-red-500" />
         </div>
@@ -255,7 +263,7 @@ export default function ChatPage() {
         <p className="text-gray-500 max-w-sm mb-8 leading-relaxed">{error}</p>
         <button
           onClick={() => router.push('/')}
-          className="px-8 py-3.5 bg-[#0f4bb9] text-white rounded-xl font-bold shadow-md hover:bg-blue-800 transition-all active:scale-95"
+          className="px-8 py-3.5 bg-[#3b5034] text-white rounded-xl font-bold shadow-md hover:bg-blue-800 transition-all active:scale-95"
         >
           Go Back
         </button>
@@ -266,7 +274,7 @@ export default function ChatPage() {
   const isOwner = currentUserId === chatData?.ownerId;
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center md:py-8 px-0 sm:px-6 relative">
+    <div className="min-h-screen bg-[#ede8de] flex flex-col items-center md:py-8 px-0 sm:px-6 relative">
       
       {/* Decorative Brand Elements (Desktop only) */}
       <div className="hidden md:block absolute top-0 left-0 w-[500px] h-[500px] bg-blue-100/50 rounded-full blur-3xl -translate-y-1/2 -translate-x-1/4 pointer-events-none" />
@@ -297,7 +305,7 @@ export default function ChatPage() {
                   {isOwner && <span className="hidden md:inline-flex bg-blue-100 text-blue-700 text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wider">Owner View</span>}
                 </h2>
                 <div className="flex items-center gap-1.5 mt-0.5">
-                   <ShieldCheck className="w-3.5 h-3.5 text-[#0f4bb9]" />
+                   <ShieldCheck className="w-3.5 h-3.5 text-[#3b5034]" />
                    <span className="text-[10px] md:text-xs font-bold text-gray-400 capitalize">
                      Ref: {chatData?.itemName || 'Asset'}
                    </span>
@@ -317,7 +325,7 @@ export default function ChatPage() {
 
         {/* Action Banners */}
         {isOwner && !itemReturned && (
-          <div className="bg-gradient-to-r from-[#0f4bb9] to-blue-700 px-6 py-3 flex flex-col sm:flex-row items-center justify-between shadow-md shrink-0 sm:gap-4 gap-3 z-10 relative">
+          <div className="bg-gradient-to-r from-[#3b5034] to-blue-700 px-6 py-3 flex flex-col sm:flex-row items-center justify-between shadow-md shrink-0 sm:gap-4 gap-3 z-10 relative">
             <p className="text-xs sm:text-sm text-white font-medium flex items-center gap-2 text-center sm:text-left">
                <CheckCircle className="w-4 h-4 text-blue-200" />
                Safely recovered your asset? Inform the finder.
@@ -325,10 +333,10 @@ export default function ChatPage() {
             <button 
               onClick={handleConfirmReturned}
               disabled={confirmingReward}
-              className="w-full sm:w-auto bg-white text-[#0f4bb9] text-xs px-4 py-2 rounded-xl font-bold shadow-sm hover:shadow-md transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full sm:w-auto bg-white text-[#3b5034] text-xs px-4 py-2 rounded-xl font-bold shadow-sm hover:shadow-md transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {confirmingReward ? (
-                <div className="w-3.5 h-3.5 border-2 border-t-transparent border-[#0f4bb9] rounded-full animate-spin"></div>
+                <div className="w-3.5 h-3.5 border-2 border-t-transparent border-[#3b5034] rounded-full animate-spin"></div>
               ) : (
                 <CheckCircle className="w-3.5 h-3.5" />
               )}
@@ -345,7 +353,7 @@ export default function ChatPage() {
         )}
 
         {/* Message List */}
-        <div className="flex-1 overflow-y-auto pt-8 lg:pt-14 p-4 md:p-8 space-y-6 relative bg-[#F8FAFC]">
+        <div className="flex-1 overflow-y-auto pt-8 lg:pt-14 p-4 md:p-8 space-y-6 relative bg-[#ede8de]">
           {/* Security Notice */}
           <div className="flex items-center justify-center my-4">
              <div className="bg-white px-4 py-2 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-2">
@@ -381,30 +389,29 @@ export default function ChatPage() {
               }
 
               return (
-                <div key={msg.id || idx} className="flex flex-col">
+                <div key={msg.id || idx} className="flex flex-col w-full">
                   {showDateDivider && (
-                    <div className="flex items-center justify-center gap-4 my-8">
-                       <div className="h-px bg-gray-200 flex-1 max-w-[100px]" />
+                    <div className="flex items-center justify-center gap-4 my-6">
+                       <div className="h-px bg-gray-200 flex-1 max-w-[80px]" />
                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{currentMsgDate}</span>
-                       <div className="h-px bg-gray-200 flex-1 max-w-[100px]" />
+                       <div className="h-px bg-gray-200 flex-1 max-w-[80px]" />
                     </div>
                   )}
 
-                  <div className={clsx("flex flex-col", isMe ? 'items-end' : 'items-start')}>
-                    <div className={clsx(
-                       "max-w-[75%] p-4 text-sm leading-relaxed shadow-sm",
-                       isMe 
-                          ? "bg-[#0f4bb9] text-white rounded-[1.2rem] rounded-tr-sm" 
-                          : "bg-white text-gray-800 rounded-[1.2rem] rounded-tl-sm border border-gray-100"
-                    )}>
-                      {msg.message}
-                    </div>
-                    <div className={clsx(
-                       "text-[10px] font-bold text-gray-400 mt-1.5 flex items-center gap-1",
-                       isMe ? "mr-1" : "ml-1"
-                    )}>
-                      {formatMessageTime(msg.timestamp)}
-                      {isMe && msg.timestamp && <span className="text-blue-500 ml-1">• Sent</span>}
+                  <div className={clsx("flex w-full mt-2", isMe ? 'justify-end' : 'justify-start')}>
+                    <div className={clsx("flex flex-col max-w-[85%] md:max-w-[75%]", isMe ? "items-end" : "items-start")}>
+                      <div className={clsx(
+                         "px-4 py-2.5 text-sm leading-relaxed shadow-sm",
+                         isMe 
+                            ? "bg-[#3b5034] text-white rounded-[1.2rem] rounded-tr-sm" 
+                            : "bg-white text-gray-800 rounded-[1.2rem] rounded-tl-sm border border-gray-100"
+                      )}>
+                        {msg.message}
+                      </div>
+                      <div className="text-[10px] font-bold text-gray-400 mt-1 flex items-center gap-1 mx-1">
+                        {formatMessageTime(msg.timestamp)}
+                        {isMe && <span className="text-blue-500">• Sent</span>}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -422,15 +429,27 @@ export default function ChatPage() {
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder="Type a secure message..."
-              className="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm font-medium rounded-2xl pl-5 pr-14 py-4 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-gray-400 placeholder:font-normal shadow-inner"
+              className="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm font-medium rounded-2xl pl-5 pr-24 py-4 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-gray-400 placeholder:font-normal shadow-inner"
             />
-            <button
-              type="submit"
-              disabled={!newMessage.trim() || sending}
-              className="absolute right-2 w-10 h-10 bg-[#0f4bb9] hover:bg-blue-800 text-white rounded-xl transition-all disabled:opacity-50 disabled:hover:bg-[#0f4bb9] flex items-center justify-center shadow-md active:scale-95"
-            >
-              <Send className="w-4 h-4 ml-0.5" />
-            </button>
+            <div className="absolute right-2 flex items-center gap-2">
+              <div className="relative">
+                <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+                  <Smile className="w-5 h-5" />
+                </button>
+                {showEmojiPicker && (
+                  <div className="absolute bottom-12 right-0 z-50">
+                    <EmojiPicker onEmojiClick={onEmojiClick} searchDisabled skinTonesDisabled />
+                  </div>
+                )}
+              </div>
+              <button
+                type="submit"
+                disabled={!newMessage.trim() || sending}
+                className="w-10 h-10 bg-[#3b5034] hover:bg-blue-800 text-white rounded-xl transition-all disabled:opacity-50 flex items-center justify-center shadow-md active:scale-95"
+              >
+                <Send className="w-4 h-4 ml-0.5" />
+              </button>
+            </div>
           </form>
           <div className="flex items-center justify-center gap-1 mt-3">
              <ShieldCheck className="w-3 h-3 text-gray-400" />

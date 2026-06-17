@@ -15,7 +15,6 @@ import toast from 'react-hot-toast';
 import { QRCodeSVG } from 'qrcode.react';
 import { setDoc } from 'firebase/firestore';
 
-
 const statusBadge = (status, collection = 'qr') => {
   const map = {
     created: 'status-created',
@@ -72,7 +71,7 @@ export default function AdminPage() {
       snap => setQrs(snap.docs.map(d => ({ id: d.id, ...d.data() })))
     );
     const unsubOrders = onSnapshot(
-      query(collection(db, 'orders')),
+      query(collection(db, 'orders'), orderBy('createdAt', 'desc')),
       snap => setOrders(snap.docs.map(d => ({ id: d.id, ...d.data() })))
     );
     const unsubDropzones = onSnapshot(
@@ -349,7 +348,7 @@ export default function AdminPage() {
         ctx.rotate(rotateRad);
 
         // Draw white background if needed (optional since the template background is off-white)
-        // ctx.fillStyle = "#FFFFFF";
+        // ctx.fillStyle = "#ede8de";
         // ctx.fillRect(-qrSize / 2, -qrSize / 2, qrSize, qrSize);
 
         ctx.drawImage(qrImg, -qrSize / 2, -qrSize / 2, qrSize, qrSize);
@@ -445,70 +444,53 @@ export default function AdminPage() {
   };
 
   const downloadOrderBill = async (order) => {
-    const { jsPDF } = await import('jspdf');
-    const orderUser = users.find(u => u.id === order.userId);
-    const doc = new jsPDF();
+    try {
+      const ExcelJS = await import('exceljs');
+      const { saveAs } = await import('file-saver');
+      const orderUser = users.find(u => u.id === order.userId);
+      
+      const response = await fetch('/Returnji_Invoice_Template.xlsx');
+      const arrayBuffer = await response.arrayBuffer();
 
-    // Header
-    doc.setFontSize(22);
-    doc.setTextColor(124, 58, 237); // Ghost purple
-    doc.text("RETURNJI - INVOICE", 105, 20, { align: "center" });
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(arrayBuffer);
+      const sheet = workbook.worksheets[0];
 
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text(`Generated on: ${new Date().toLocaleString()}`, 105, 28, { align: "center" });
+      sheet.getCell('B3').value = order.id.slice(0, 10);
+      sheet.getCell('B4').value = order.createdAt?.toDate ? order.createdAt.toDate().toLocaleDateString() : new Date().toLocaleDateString();
+      sheet.getCell('B5').value = orderUser?.name || 'Ghost User';
+      sheet.getCell('B6').value = orderUser?.phone || 'N/A';
+      sheet.getCell('B7').value = orderUser?.email || 'N/A';
+      
+      const dzName = order.dropzone ? (
+        {
+          'dz1': 'Tasty Vadapav, Old Food Court',
+          'dz2': 'Jagdish Foods, New Food Court',
+          'dz3': 'Mr. Puff, PIT',
+          'dz4': 'Mogal Mug Pulav, PIT',
+          'dz5': 'Sawariyaa Chaat Corner, PIT',
+        }[order.dropzone] || order.dropzone
+      ) : 'Dropzone collection';
+      sheet.getCell('B8').value = dzName;
 
-    // Divider
-    doc.setDrawColor(200);
-    doc.line(20, 35, 190, 35);
+      sheet.getCell('B12').value = order.productType || 'Returnji Tag';
+      sheet.getCell('C12').value = 1;
+      sheet.getCell('D12').value = order.amount || 0;
+      sheet.getCell('E12').value = order.amount || 0;
 
-    // Bill Details
-    doc.setFontSize(12);
-    doc.setTextColor(0);
-    doc.setFont("helvetica", "bold");
-    doc.text("Order Details", 20, 45);
+      sheet.getCell('E23').value = order.amount || 0; // Subtotal
+      sheet.getCell('E24').value = 0; // GST
+      sheet.getCell('E25').value = order.amount || 0; // Total
 
-    doc.setFont("helvetica", "normal");
-    doc.text(`Order ID: #${order.id.slice(0, 10)}`, 20, 55);
-    doc.text(`Tracking ID: ${order.orderId || 'N/A'}`, 20, 62);
-    doc.text(`Status: ${order.status.toUpperCase()}`, 20, 69);
-    doc.text(`Date: ${order.createdAt?.toDate().toLocaleDateString() || 'N/A'}`, 20, 76);
-
-    // Customer Details
-    doc.setFont("helvetica", "bold");
-    doc.text("Customer Info", 120, 45);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Name: ${orderUser?.name || 'Ghost User'}`, 120, 55);
-    doc.text(`Email: ${orderUser?.email || 'N/A'}`, 120, 62);
-
-    // Table Header
-    doc.setFillColor(240, 240, 240);
-    doc.rect(20, 90, 170, 10, 'F');
-    doc.setFont("helvetica", "bold");
-    doc.text("Product", 25, 96);
-    doc.text("QR Link ID", 80, 96);
-    doc.text("Price", 170, 96, { align: "right" });
-
-    // Table Row
-    doc.setFont("helvetica", "normal");
-    doc.text(order.productType || 'QR Product', 25, 108);
-    doc.text(order.qrId || 'N/A', 80, 108);
-    doc.text(`INR ${order.amount || 0}.00`, 170, 108, { align: "right" });
-
-    // Footer divider
-    doc.line(20, 120, 190, 120);
-
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("Total Amount:", 130, 130);
-    doc.text(`INR ${order.amount || 0}.00`, 190, 130, { align: "right" });
-
-    // Ghost Footer
-    doc.setFontSize(9);
-    doc.setTextColor(150);
-    doc.text("Thank you for choosing Returnji. Protecting your belongings, invisibly.", 105, 280, { align: "center" });
-
-    doc.save(`Returnji-Invoice-${order.id.slice(0, 8)}.pdf`);
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      saveAs(blob, `Returnji-Invoice-${order.id.slice(0, 8)}.xlsx`);
+      
+      toast.success('Invoice downloaded successfully');
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to generate invoice');
+    }
   };
 
   const handleGenerateQrs = async (e) => {
@@ -668,7 +650,7 @@ export default function AdminPage() {
                       downloadAllTagsAsZip(filteredQrs, tab);
                     }}
                     disabled={generatingZip}
-                    className="inline-flex items-center gap-2 rounded-lg bg-[#0f4bb9] px-4 py-2 text-sm font-bold text-white hover:bg-blue-800 transition-colors shadow-sm disabled:opacity-50"
+                    className="inline-flex items-center gap-2 rounded-lg bg-[#3b5034] px-4 py-2 text-sm font-bold text-white hover:bg-blue-800 transition-colors shadow-sm disabled:opacity-50"
                   >
                     <Download className={clsx("w-4 h-4", generatingZip && "animate-bounce")} />
                     <span>{generatingZip ? 'Bundling ZIP...' : `Download All ${tab === 'qr_stickers' ? 'Sticker' : 'Keychain'} Tags`}</span>
@@ -742,41 +724,67 @@ export default function AdminPage() {
                   <thead>
                     <tr className="bg-gray-50 border-b border-gray-100">
                       <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-widest">Order Details</th>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-widest">User</th>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-widest">Dropzone</th>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-widest">Date</th>
                       <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-widest">Status</th>
                       <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-widest">Amount</th>
                       <th className="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-widest">Invoice</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {orders.map(order => (
-                      <tr key={order.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-5 py-4">
-                          <p className="font-medium text-gray-900">{order.productType}</p>
-                          <p className="text-xs text-gray-400 font-mono">ID: #{order.id.slice(0, 10)}</p>
-                        </td>
-                        <td className="px-5 py-4">{statusBadge(order.status)}</td>
-                        <td className="px-5 py-4 text-gray-700 font-medium">INR {order.amount || 0}.00</td>
-                        <td className="px-5 py-4 flex items-center justify-end gap-3">
-                          <select
-                            value={order.status}
-                            onChange={e => updateOrderStatus(order.id, order.userId, order.productType, e.target.value, order.qrId)}
-                            className="text-xs bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-gray-700 cursor-pointer"
-                          >
-                            <option value="pending">pending</option>
-                            <option value="ready">ready</option>
-                            <option value="delivered">delivered</option>
-                          </select>
+                    {orders.map(order => {
+                      const orderUser = users.find(u => u.id === order.userId);
+                      const orderDate = order.createdAt?.toDate ? order.createdAt.toDate().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A';
+                      return (
+                        <tr key={order.id} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-5 py-4">
+                            <p className="font-medium text-gray-900">{order.productType}</p>
+                            <p className="text-xs text-gray-400 font-mono">ID: #{order.id.slice(0, 10)}</p>
+                          </td>
+                          <td className="px-5 py-4">
+                            <p className="font-medium text-gray-900">{orderUser?.name || 'Anonymous'}</p>
+                            <p className="text-xs text-gray-400">{orderUser?.email || 'No email'}</p>
+                          </td>
+                          <td className="px-5 py-4">
+                            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-800 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100">
+                              <MapPin className="w-3 h-3 text-blue-500" />
+                              {order.dropzone ? (
+                                {
+                                  'dz1': 'Tasty Vadapav, Old Food Court',
+                                  'dz2': 'Jagdish Foods, New Food Court',
+                                  'dz3': 'Mr. Puff, PIT',
+                                  'dz4': 'Mogal Mug Pulav, PIT',
+                                  'dz5': 'Sawariyaa Chaat Corner, PIT',
+                                }[order.dropzone] || order.dropzone
+                              ) : 'Not Selected'}
+                            </span>
+                          </td>
+                          <td className="px-5 py-4 text-gray-700 text-sm">{orderDate}</td>
+                          <td className="px-5 py-4">{statusBadge(order.status)}</td>
+                          <td className="px-5 py-4 text-gray-700 font-medium">INR {order.amount || 0}.00</td>
+                          <td className="px-5 py-4 flex items-center justify-end gap-3">
+                            <select
+                              value={order.status}
+                              onChange={e => updateOrderStatus(order.id, order.userId, order.productType, e.target.value, order.qrId)}
+                              className="text-xs bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-gray-700 cursor-pointer"
+                            >
+                              <option value="pending">pending</option>
+                              <option value="ready">ready</option>
+                              <option value="delivered">delivered</option>
+                            </select>
 
-                          <button
-                            onClick={() => downloadOrderBill(order)}
-                            className="p-2 rounded-lg bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-blue-600 transition-all group"
-                            title="Download Bill PDF"
-                          >
-                            <FileText className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                            <button
+                              onClick={() => downloadOrderBill(order)}
+                              className="p-2 rounded-lg bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-blue-600 transition-all group"
+                              title="Download Bill PDF"
+                            >
+                              <FileText className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -1024,7 +1032,7 @@ export default function AdminPage() {
                         <button
                           type="submit"
                           disabled={generatingQrs}
-                          className="w-full bg-[#0f4bb9] text-white font-bold py-3 rounded-xl hover:bg-blue-800 transition-all shadow-md mt-2 disabled:opacity-50"
+                          className="w-full bg-[#3b5034] text-white font-bold py-3 rounded-xl hover:bg-blue-800 transition-all shadow-md mt-2 disabled:opacity-50"
                         >
                           {generatingQrs ? 'Generating...' : 'Confirm Generate'}
                         </button>

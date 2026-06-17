@@ -303,33 +303,29 @@ export default function ChatsPage() {
                 const showDateDivider = currentMsgDate !== previousMsgDate;
 
                 return (
-                  <div key={m.id || idx} className="flex flex-col">
+                  <div key={m.id || idx} className="flex flex-col w-full">
                     {showDateDivider && (
-                      <div className="flex items-center justify-center gap-4 my-8">
-                        <div className="h-px bg-gray-200 flex-1 max-w-[100px]" />
+                      <div className="flex items-center justify-center gap-4 my-6">
+                        <div className="h-px bg-gray-200 flex-1 max-w-[80px]" />
                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{currentMsgDate}</span>
-                        <div className="h-px bg-gray-200 flex-1 max-w-[100px]" />
+                        <div className="h-px bg-gray-200 flex-1 max-w-[80px]" />
                       </div>
                     )}
 
-                    <div className={clsx(
-                      "flex flex-col",
-                      isMine ? "items-end" : "items-start"
-                    )}>
-                      <div className={clsx(
-                        "max-w-[70%] p-4 text-[15px] leading-relaxed",
-                        isMine
-                          ? "bg-[#0f4bb9] text-white rounded-2xl rounded-tr-sm self-end shadow-md shadow-blue-900/10"
-                          : "bg-white text-gray-700 rounded-2xl rounded-tl-sm self-start shadow-sm border border-gray-100 shadow-teal-900/5"
-                      )}>
-                        {m.message}
-                      </div>
-                      <div className={clsx(
-                        "text-[10px] font-bold text-gray-400 mt-2 flex items-center gap-1",
-                        isMine ? "self-end" : "self-start ml-2"
-                      )}>
-                        {formatTime(m.timestamp)}
-                        {isMine && <span className="ml-1">• Read</span>}
+                    <div className={clsx("flex w-full mt-2", isMine ? "justify-end" : "justify-start")}>
+                      <div className={clsx("flex flex-col max-w-[85%] md:max-w-[75%]", isMine ? "items-end" : "items-start")}>
+                        <div className={clsx(
+                          "px-4 py-2.5 text-[15px] leading-relaxed shadow-sm",
+                          isMine
+                            ? "bg-[#3b5034] text-white rounded-[1.2rem] rounded-tr-sm"
+                            : "bg-white text-gray-800 rounded-[1.2rem] rounded-tl-sm border border-gray-100"
+                        )}>
+                          {m.message}
+                        </div>
+                        <div className="text-[10px] font-bold text-gray-400 mt-1 flex items-center gap-1 mx-1">
+                          {formatTime(m.timestamp)}
+                          {isMine && <span className="text-blue-500">• Sent</span>}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -370,7 +366,7 @@ export default function ChatsPage() {
                   <button
                     type="submit"
                     disabled={!newMsg.trim() || sending}
-                    className="w-10 h-10 rounded-full bg-[#0f4bb9] flex items-center justify-center text-white disabled:opacity-50 hover:bg-blue-800 transition-all shadow-md active:scale-95"
+                    className="w-10 h-10 rounded-full bg-[#3b5034] flex items-center justify-center text-white disabled:opacity-50 hover:bg-blue-800 transition-all shadow-md active:scale-95"
                   >
                     <Send className="w-4 h-4 ml-0.5" />
                   </button>

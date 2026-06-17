@@ -21,10 +21,10 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const data = await login(email, password, rememberMe);
-      
+
       // If authentication passed but user data is somehow missing from DB, reject
       if (!data && email !== 'admin@ghostqr.in') {
-         throw new Error('invalid-credentials');
+        throw new Error('invalid-credentials');
       }
 
       toast.success('Welcome back!');
@@ -55,7 +55,7 @@ export default function LoginPage() {
     try {
       const data = await loginWithGoogle();
       toast.success('Welcome back!');
-      
+
       const searchParams = new URLSearchParams(window.location.search);
       const redirect = searchParams.get('redirect');
 
@@ -75,27 +75,21 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col md:flex-row items-center justify-center">
+    <div className="min-h-screen bg-[#ede8de] flex flex-col md:flex-row items-center justify-center">
 
       {/* Left side branding */}
-      <div className="hidden md:flex md:w-1/2 h-screen bg-[#0f4bb9] flex-col justify-between p-12 text-white relative overflow-hidden">
+      <div className="hidden md:flex md:w-1/2 h-screen bg-[#3b5034] flex-col justify-between p-12 text-white relative overflow-hidden">
         {/* Decorative elements */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-400/20 rounded-full blur-2xl translate-y-1/2 -translate-x-1/4" />
 
         <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-16">
-            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-lg">
-              <ShieldCheck className="w-6 h-6 text-[#0f4bb9]" />
-            </div>
-            <div>
-              <span className="text-2xl font-bold tracking-tight leading-none block">Returnji</span>
-              <span className="text-xs text-blue-200 font-medium tracking-widest uppercase">Digital Concierge</span>
-            </div>
+          <div className="mb-16">
+            <img src="/logo.png" alt="Returnji Logo" className="h-12 w-auto brightness-0 invert" />
           </div>
 
           <h1 className="text-5xl font-bold leading-tight mb-6">
-            Welcome back to<br />your digital concierge.
+            Welcome back to<br />Returnji
           </h1>
           <p className="text-blue-100 text-lg max-w-md leading-relaxed">
             Securely manage your assets, chat with finders, and track your active IoT tags.
@@ -124,7 +118,7 @@ export default function LoginPage() {
 
           {/* Mobile Header (only visible on small screens) */}
           <div className="md:hidden flex items-center gap-3 mb-10 justify-center">
-            <div className="w-10 h-10 rounded-xl bg-[#0f4bb9] flex items-center justify-center shadow-md">
+            <div className="w-10 h-10 rounded-xl bg-[#3b5034] flex items-center justify-center shadow-md">
               <ShieldCheck className="w-6 h-6 text-white" />
             </div>
             <div className="flex flex-col">
@@ -138,7 +132,7 @@ export default function LoginPage() {
             <p className="text-gray-500 text-sm">Please enter your details to access your account.</p>
           </div>
 
-          <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+          <div className="bg-[#ffffff] rounded-3xl p-8 shadow-sm border border-gray-100">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label className="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wider">Email Address</label>
@@ -187,7 +181,7 @@ export default function LoginPage() {
                   />
                   <span className="text-sm font-medium text-gray-600 group-hover:text-gray-900 transition-colors">Remember me</span>
                 </label>
-                <Link href="#" className="text-sm font-bold text-[#0f4bb9] hover:text-blue-800 transition-colors">
+                <Link href="#" className="text-sm font-bold text-[#3b5034] hover:text-blue-800 transition-colors">
                   Forgot password?
                 </Link>
               </div>
@@ -195,7 +189,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#0f4bb9] hover:bg-blue-800 text-white rounded-xl py-3.5 font-bold shadow-md hover:shadow-lg transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100 mt-2"
+                className="w-full bg-[#3b5034] hover:bg-blue-800 text-white rounded-xl py-3.5 font-bold shadow-md hover:shadow-lg transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100 mt-2"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -213,7 +207,7 @@ export default function LoginPage() {
                   <div className="w-full border-t border-gray-100" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-3 text-gray-400 font-bold tracking-wider">Or continue with</span>
+                  <span className="bg-[#ffffff] px-3 text-gray-400 font-bold tracking-wider">Or continue with</span>
                 </div>
               </div>
 
@@ -221,7 +215,7 @@ export default function LoginPage() {
                 type="button"
                 onClick={handleGoogleLogin}
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-xl py-3 font-bold shadow-sm transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-3 bg-[#ffffff] hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-xl py-3 font-bold shadow-sm transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path
@@ -247,13 +241,13 @@ export default function LoginPage() {
 
             <p className="text-center text-sm text-gray-600 mt-8 font-medium">
               Are you new here?{' '}
-              <a 
-                href="#" 
+              <a
+                href="#"
                 onClick={(e) => {
                   e.preventDefault();
                   router.push('/register' + window.location.search);
                 }}
-                className="font-bold text-[#0f4bb9] hover:text-blue-800 transition-colors"
+                className="font-bold text-[#3b5034] hover:text-blue-800 transition-colors"
               >
                 Create an account
               </a>

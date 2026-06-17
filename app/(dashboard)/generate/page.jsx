@@ -148,7 +148,7 @@ function GenerateQRForm() {
               <button 
                 type="submit" 
                 disabled={loading}
-                className="w-full bg-[#0f4bb9] text-white rounded-[1.5rem] py-5 font-bold shadow-xl shadow-blue-900/20 hover:shadow-2xl hover:scale-[1.01] transition-all active:scale-95 mt-4 disabled:opacity-50 flex items-center justify-center gap-3"
+                className="w-full bg-[#3b5034] text-white rounded-[1.5rem] py-5 font-bold shadow-xl shadow-blue-900/20 hover:shadow-2xl hover:scale-[1.01] transition-all active:scale-95 mt-4 disabled:opacity-50 flex items-center justify-center gap-3"
               >
                 {loading ? 'Creating Profile...' : (
                   <>
@@ -162,7 +162,7 @@ function GenerateQRForm() {
 
         {/* Info Section */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-[#0f4bb9] rounded-[2.5rem] p-8 text-white shadow-xl shadow-blue-900/10 relative overflow-hidden group">
+          <div className="bg-[#3b5034] rounded-[2.5rem] p-8 text-white shadow-xl shadow-blue-900/10 relative overflow-hidden group">
             <div className="absolute top-0 right-0 -mt-8 -mr-8 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
             
             <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-6 border border-white/20">

@@ -9,61 +9,7 @@ import { ShoppingCart, QrCode, ArrowUpDown, Plus } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import toast from 'react-hot-toast';
 
-const products = [
-   {
-      id: 'Ghost-stickers',
-      name: 'Returnji QR Stickers',
-      description: '1 weather-proof industrial grade sticker. Perfect for bottles, documents, backpacks and flat surfaces.',
-      price: 29.00,
-      image: '/returnji_sticker.jpg', // Sticker representation
-      badge: 'Best Seller',
-      badgeColor: 'bg-teal-100 text-teal-700',
-   },
-   {
-      id: 'keychains',
-      name: 'Returnji QR Keychain',
-      description: 'Laser-etched aerospace-grade acrylic tag for keys and backpacks. Indestructible.',
-      price: 89.00,
-      image: '/returnji_keychain.jpg', // keychain representation
-      badge: 'Premium',
-      badgeColor: 'bg-indigo-100 text-indigo-700',
-   },
-   {
-      id: 'travel-bundle',
-      name: 'Returnji Bundle',
-      description: 'Includes 2 Returnji QR Keychains and 10 Returnji QR Stickers. Complete protection for your next trip.',
-      price: 369.00,
-      image: '/returnji_bundle.jpg', // travel kit representation
-      badge: 'Save 20%',
-      badgeColor: 'bg-blue-100 text-blue-700',
-   },
-   {
-      id: 'sticker-bundle',
-      name: 'Returnji Student Bundle',
-      description: 'Pack of 10 weather-proof industrial grade stickers. Perfect for bottles, and flat surfaces.',
-      price: 239,
-      image: '/returnji_student_bundle.jpg', // pet tag reference
-      badge: 'Bundle Save 20%',
-   },
-   {
-      id: 'customize-sticker',
-      name: 'Customize Your QR-Sticker',
-      description: 'Design your own QR sticker with custom colors, sizes, and more.',
-      price: 29.00,
-      image: '/returnji_custom_sticker.png', // laptop back reference
-      badge: 'New Arrival',
-      badgeColor: 'bg-emerald-100 text-emerald-700',
-   },
-   {
-      id: 'customize-keychain',
-      name: 'Customize Your QR-Keychain',
-      description: 'Design your own QR keychain with custom colors, sizes, and more.',
-      price: 129.00,
-      image: '/returnji_custom_keychain.png', // leather wallet reference
-      badge: 'New Arrival',
-      badgeColor: 'bg-emerald-100 text-emerald-700',
-   },
-];
+import { products } from '@/lib/products';
 
 export default function ShopPage() {
    const { user } = useAuth();
@@ -127,7 +73,7 @@ export default function ShopPage() {
          {/* Already in layout, but leaving vertical space here if needed, or we adapt the top */}
 
          {/* Hero Banner inside the content */}
-         {/* <div className="bg-[#0f4bb9] rounded-[2rem] p-0 flex flex-col md:flex-row items-center overflow-hidden mb-8 shadow-xl shadow-blue-900/10 h-auto md:h-80 w-[calc(100%+32px)] -ml-4 sm:ml-0 sm:w-full">
+         {/* <div className="bg-[#3b5034] rounded-[2rem] p-0 flex flex-col md:flex-row items-center overflow-hidden mb-8 shadow-xl shadow-blue-900/10 h-auto md:h-80 w-[calc(100%+32px)] -ml-4 sm:ml-0 sm:w-full">
 
             {/* <div className="p-10 md:w-1/2 z-10">
                <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 text-white text-[10px] font-bold uppercase tracking-widest mb-4">
@@ -140,7 +86,7 @@ export default function ShopPage() {
                   Premium hardware tags with unique QR identifiers. Connect your valuables to our digital concierge in seconds.
                </p>
                <div className="flex items-center gap-4">
-                  <button className="bg-white text-[#0f4bb9] px-6 py-3 rounded-xl font-bold text-sm shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all">
+                  <button className="bg-white text-[#3b5034] px-6 py-3 rounded-xl font-bold text-sm shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all">
                      Explore Bundles
                   </button>
                   <button className="bg-transparent text-white border border-white/30 px-6 py-3 rounded-xl font-bold text-sm hover:bg-white/10 transition-colors">
@@ -180,7 +126,7 @@ export default function ShopPage() {
                      key={tab}
                      onClick={() => setActiveTab(tab)}
                      className={`px-5 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-colors ${activeTab === tab
-                        ? 'bg-blue-50 text-[#0f4bb9]'
+                        ? 'bg-blue-50 text-[#3b5034]'
                         : 'text-gray-500 hover:bg-gray-100'
                         }`}
                   >
@@ -225,7 +171,7 @@ export default function ShopPage() {
                   <div className="p-5 flex-1 flex flex-col">
                      <div className="flex items-start justify-between gap-4 mb-2">
                         <h3 className="font-bold text-lg text-gray-900 leading-tight">{product.name}</h3>
-                        <span className="font-bold text-[#0f4bb9] text-lg shrink-0">₹{product.price.toFixed(2)}</span>
+                        <span className="font-bold text-[#3b5034] text-lg shrink-0">₹{product.price.toFixed(2)}</span>
                      </div>
 
                      <p className="text-gray-500 text-xs leading-relaxed mb-6 flex-1">
@@ -235,7 +181,7 @@ export default function ShopPage() {
                      <div className="flex items-center gap-3 mt-auto">
                         <button
                            onClick={() => initiateOrder(product)}
-                           className="flex-1 bg-[#0f4bb9] hover:bg-blue-800 text-white py-3 rounded-xl font-bold text-sm shadow-md active:scale-95 transition-all"
+                           className="flex-1 bg-[#3b5034] hover:bg-blue-800 text-white py-3 rounded-xl font-bold text-sm shadow-md active:scale-95 transition-all"
                         >
                            Buy Now
                         </button>

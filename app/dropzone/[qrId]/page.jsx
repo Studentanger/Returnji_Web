@@ -123,9 +123,9 @@ export default function DropzonePage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[#F8FAFC]">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#ede8de]">
         <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-lg mb-6">
-           <MapPin className="w-8 h-8 text-[#0f4bb9] animate-bounce" />
+           <MapPin className="w-8 h-8 text-[#3b5034] animate-bounce" />
         </div>
         <p className="text-gray-500 font-bold tracking-widest uppercase text-sm animate-pulse">Locating Dropzones...</p>
       </div>
@@ -134,7 +134,7 @@ export default function DropzonePage() {
 
   if (successOTP) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-6 text-center">
+      <div className="min-h-screen bg-[#ede8de] flex items-center justify-center p-6 text-center">
         
         {/* Decorative elements */}
         <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-teal-50/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
@@ -150,7 +150,7 @@ export default function DropzonePage() {
             Hand over your item to the Zone Manager and tell them this code to verify the secure drop-off.
           </p>
 
-          <div className="bg-[#0f4bb9] rounded-2xl p-6 sm:p-8 mb-8 relative overflow-hidden shadow-lg shadow-blue-900/10 group">
+          <div className="bg-[#3b5034] rounded-2xl p-6 sm:p-8 mb-8 relative overflow-hidden shadow-lg shadow-blue-900/10 group">
              <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 blur-2xl rounded-full translate-x-20 -translate-y-10" />
              <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 blur-xl rounded-full -translate-x-10 translate-y-10" />
              
@@ -166,7 +166,7 @@ export default function DropzonePage() {
                      navigator.clipboard.writeText(successOTP);
                      toast.success('Code Copied!');
                    }}
-                   className="mt-4 px-4 py-2 rounded-xl bg-white text-[#0f4bb9] font-bold text-xs hover:bg-blue-50 transition-all active:scale-95 shadow-sm flex items-center justify-center gap-2"
+                   className="mt-4 px-4 py-2 rounded-xl bg-white text-[#3b5034] font-bold text-xs hover:bg-blue-50 transition-all active:scale-95 shadow-sm flex items-center justify-center gap-2"
                  >
                    <Copy className="w-4 h-4" /> Copy Code
                 </button>
@@ -196,7 +196,7 @@ export default function DropzonePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col md:p-8 px-0 h-[100dvh]">
+    <div className="min-h-screen bg-[#ede8de] flex flex-col md:p-8 px-0 h-[100dvh]">
       
       {/* Decorative desktop elements */}
       <div className="hidden md:block absolute top-0 left-0 w-[500px] h-[500px] bg-blue-100/50 rounded-full blur-3xl -translate-y-1/2 -translate-x-1/4 pointer-events-none" />
@@ -215,7 +215,7 @@ export default function DropzonePage() {
           
           <div className="flex-1">
              <div className="flex items-center gap-2 mb-0.5">
-                <Navigation className="w-4 h-4 text-[#0f4bb9]" />
+                <Navigation className="w-4 h-4 text-[#3b5034]" />
                 <h1 className="text-lg md:text-xl font-bold text-gray-900 leading-none">Select Secure Dropzone</h1>
              </div>
             <p className="text-xs font-medium text-gray-500">Choose a partnered location to safely stash the {qrData?.itemName || 'item'}</p>
@@ -232,7 +232,7 @@ export default function DropzonePage() {
            {/* Loader Overlay */}
            {loading && (
              <div className="absolute inset-0 bg-white/50 backdrop-blur-sm z-30 flex flex-col items-center justify-center">
-                 <Loader2 className="w-10 h-10 text-[#0f4bb9] animate-spin mb-4" />
+                 <Loader2 className="w-10 h-10 text-[#3b5034] animate-spin mb-4" />
                  <p className="font-bold text-gray-600 text-sm tracking-widest uppercase">Initializing Map...</p>
              </div>
            )}

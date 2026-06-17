@@ -211,9 +211,9 @@ export default function ScanPage() {
 
   if (redirecting) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[#F8FAFC]">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#ede8de]">
         <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-lg mb-6">
-          <Navigation className="w-8 h-8 text-[#0f4bb9] animate-bounce" />
+          <Navigation className="w-8 h-8 text-[#3b5034] animate-bounce" />
         </div>
         <p className="text-gray-500 font-bold tracking-widest uppercase text-sm animate-pulse">Redirecting to Registration...</p>
       </div>
@@ -222,9 +222,9 @@ export default function ScanPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[#F8FAFC]">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#ede8de]">
         <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-lg mb-6">
-          <ShieldCheck className="w-8 h-8 text-[#0f4bb9] animate-pulse" />
+          <ShieldCheck className="w-8 h-8 text-[#3b5034] animate-pulse" />
         </div>
         <p className="text-gray-500 font-bold tracking-widest uppercase text-sm animate-pulse">Establishing Secure Connection...</p>
       </div>
@@ -233,7 +233,7 @@ export default function ScanPage() {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[#F8FAFC] p-6 text-center">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#ede8de] p-6 text-center">
         <div className="w-20 h-20 bg-white rounded-[2rem] flex items-center justify-center shadow-xl border border-gray-100 mb-6">
           <AlertCircle className="w-10 h-10 text-red-500" />
         </div>
@@ -241,7 +241,7 @@ export default function ScanPage() {
         <p className="text-gray-500 max-w-sm mb-8 leading-relaxed">{error}</p>
         <button
           onClick={() => router.push('/')}
-          className="px-8 py-3.5 bg-[#0f4bb9] text-white rounded-xl font-bold shadow-md hover:bg-blue-800 transition-all active:scale-95"
+          className="px-8 py-3.5 bg-[#3b5034] text-white rounded-xl font-bold shadow-md hover:bg-blue-800 transition-all active:scale-95"
         >
           Return to Safety
         </button>
@@ -250,7 +250,7 @@ export default function ScanPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center py-12 px-4 sm:px-6 relative overflow-hidden">
+    <div className="min-h-screen bg-[#ede8de] flex flex-col items-center justify-center py-12 px-4 sm:px-6 relative overflow-hidden">
 
       {/* Decorative Brand Elements */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-100/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
@@ -258,12 +258,12 @@ export default function ScanPage() {
 
       {/* Header Branding */}
       <div className="flex items-center gap-3 mb-8 relative z-10">
-        <div className="w-10 h-10 rounded-xl bg-[#0f4bb9] flex items-center justify-center shadow-md">
+        <div className="w-10 h-10 rounded-xl bg-[#3b5034] flex items-center justify-center shadow-md">
           <ShieldCheck className="w-6 h-6 text-white" />
         </div>
         <div className="flex flex-col">
           <span className="text-2xl font-bold text-gray-900 tracking-tight leading-none">Returnji</span>
-          <span className="text-[10px] text-[#0f4bb9] font-bold tracking-widest uppercase">Digital Concierge</span>
+          <span className="text-[10px] text-[#3b5034] font-bold tracking-widest uppercase">Digital Concierge</span>
         </div>
       </div>
 
@@ -311,7 +311,7 @@ export default function ScanPage() {
               </div>
               <button 
                 onClick={() => window.open(`https://www.google.com/maps?q=${qrData.lastLatitude},${qrData.lastLongitude}`, '_blank')}
-                className="bg-[#0f4bb9] text-white px-4 py-2 rounded-lg text-[10px] font-bold hover:bg-blue-800 transition-colors shrink-0"
+                className="bg-[#3b5034] text-white px-4 py-2 rounded-lg text-[10px] font-bold hover:bg-blue-800 transition-colors shrink-0"
               >
                 Track Now
               </button>
@@ -324,7 +324,7 @@ export default function ScanPage() {
           {/* Details Box */}
           <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-start gap-4">
             <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-              <FileText className="w-5 h-5 text-[#0f4bb9]" />
+              <FileText className="w-5 h-5 text-[#3b5034]" />
             </div>
             <div>
               <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Owner Notes</h3>
@@ -354,7 +354,7 @@ export default function ScanPage() {
             <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm relative overflow-hidden group transition-all hover:border-blue-200 hover:shadow-md cursor-pointer" onClick={() => router.push(`/dropzone/${qrId}`)}>
               <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full -translate-y-16 translate-x-16 transition-transform group-hover:scale-110" />
               <div className="flex items-start gap-4 relative z-10">
-                <div className="w-12 h-12 rounded-[1rem] bg-[#0f4bb9] flex items-center justify-center shrink-0 shadow-md">
+                <div className="w-12 h-12 rounded-[1rem] bg-[#3b5034] flex items-center justify-center shrink-0 shadow-md">
                   <Navigation className="w-6 h-6 text-white" />
                 </div>
                 <div className="flex-1">
@@ -426,7 +426,7 @@ export default function ScanPage() {
               <button
                 onClick={handleStartChat}
                 disabled={startingChat}
-                className="flex-1 flex flex-col items-center justify-center gap-2 bg-[#0f4bb9] hover:bg-blue-800 text-white py-4 px-2 rounded-2xl font-bold shadow-md hover:shadow-lg transition-all active:scale-95 disabled:opacity-60"
+                className="flex-1 flex flex-col items-center justify-center gap-2 bg-[#3b5034] hover:bg-blue-800 text-white py-4 px-2 rounded-2xl font-bold shadow-md hover:shadow-lg transition-all active:scale-95 disabled:opacity-60"
               >
                 {startingChat ? (
                   <div className="w-6 h-6 border-2 border-t-transparent border-white rounded-full animate-spin"></div>
@@ -440,7 +440,7 @@ export default function ScanPage() {
                 onClick={() => router.push(`/dropzone/${qrId}`)}
                 className="flex-1 flex flex-col items-center justify-center gap-2 bg-white hover:bg-gray-50 text-gray-900 border border-gray-200 py-4 px-2 rounded-2xl font-bold shadow-sm hover:shadow-md transition-all active:scale-95"
               >
-                <MapPin className="w-6 h-6 text-[#0f4bb9]" />
+                <MapPin className="w-6 h-6 text-[#3b5034]" />
                 <span className="text-xs">Find Dropzone</span>
               </button>
             </div>

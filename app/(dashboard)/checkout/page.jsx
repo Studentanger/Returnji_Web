@@ -1,113 +1,98 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, addDoc, serverTimestamp, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ShoppingCart, QrCode, ArrowLeft, ShieldCheck, CheckCircle2, Package, CreditCard } from 'lucide-react';
+import { ShoppingCart, ArrowLeft, ShieldCheck, CheckCircle2, Package, CreditCard, Minus, Plus, MapPin } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 
 const products = [
-   { id: 'Ghost-stickers', name: 'Returnji QR Stickers', price: 29.00, image: '/returnji_sticker.jpg' },
-   { id: 'keychains', name: 'Returnji QR Keychain', price: 89.00, image: '/returnji_keychain.jpg' },
-   { id: 'travel-bundle', name: 'Returnji Bundle', price: 369.00, image: '/returnji_bundle.jpg' },
-   { id: 'sticker-bundle', name: 'Returnji Student Bundle', price: 239.00, image: '/returnji_student_bundle.jpg' },
-   { id: 'customize-sticker', name: 'Customize Your QR-Sticker', price: 29.00, image: 'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?auto=format&fit=crop&q=80&w=400' },
-   { id: 'customize-keychain', name: 'Customize Your QR-Keychain', price: 129.00, image: 'https://images.unsplash.com/photo-1627384113972-f4c0392fe5aa?auto=format&fit=crop&q=80&w=400' },
+  { id: 'returnji-sticker', name: 'Returnji QR Stickers', price: 29.00, image: '/returnji_sticker.jpg' },
+  { id: 'returnji-keychain', name: 'Returnji QR Keychain', price: 89.00, image: '/returnji_keychain.jpg' },
+  { id: 'returnji-bundle', name: 'Returnji Bundle', price: 369.00, image: '/returnji_bundle.jpg' },
+  { id: 'returnji-student-bundle', name: 'Returnji Student Bundle', price: 239.00, image: '/returnji_student_bundle.jpg' },
+  { id: 'returnji-custom-sticker', name: 'Customize Your QR-Sticker', price: 29.00, image: '/returnji_custom_sticker.png' },
+  { id: 'returnji-custom-keychain', name: 'Customize Your QR-Keychain', price: 129.00, image: '/returnji_custom_keychain.png' },
 ];
 
 export default function CheckoutPage() {
   const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { cart, cartTotal, clearCart } = useCart();
-  
-  const [qrs, setQrs] = useState([]);
-  const [loadingQrs, setLoadingQrs] = useState(true);
+  const { cart, cartTotal, clearCart, updateQuantity } = useCart();
+
   const [ordering, setOrdering] = useState(false);
-  
+  const [singleProductQty, setSingleProductQty] = useState(1);
+  const [isParulStudent, setIsParulStudent] = useState(true);
+  const [selectedDropzone, setSelectedDropzone] = useState('');
+
+  const dropzones = [
+    { id: 'dz1', name: 'Tasty Vadapav, Old Food Court' },
+    { id: 'dz2', name: 'Jagdish Foods, New Food Court' },
+    { id: 'dz3', name: 'Mr. Puff, PIT' },
+    { id: 'dz4', name: 'Mogal Mug Pulav, PIT' },
+    { id: 'dz5', name: 'Sawariyaa Chaat Corner, PIT' },
+
+  ];
+
   // For single product checkout
   const productId = searchParams.get('productId');
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  
-  // Map of item unit keys to selected QR IDs
-  // Key format: product-id_index (e.g., 'sticker_0', 'sticker_1')
-  const [linkedQrIds, setLinkedQrIds] = useState({});
-
-  useEffect(() => {
-    if (productId) {
-      const p = products.find(p => p.id === productId);
-      if (p) setSelectedProduct(p);
-    }
-  }, [productId]);
-
-  useEffect(() => {
-    if (!user) return;
-    const qrQuery = query(collection(db, 'qrcodes'), where('ownerId', '==', user.uid));
-    const unsub = onSnapshot(qrQuery, (snap) => {
-      const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      setQrs(data);
-      setLoadingQrs(false);
-    });
-    return () => unsub();
-  }, [user]);
+  const selectedProduct = productId ? products.find(p => p.id === productId) : null;
 
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
     if (!user) return;
-    
+
+    // Basic validation
+    if (!isParulStudent) {
+      toast.error('Currently we only deliver to Parul University students.');
+      return;
+    }
+
+    if (!selectedDropzone) {
+      toast.error('Please select a dropzone to collect your order.');
+      return;
+    }
+
     setOrdering(true);
     try {
       if (selectedProduct) {
         // Single Item Checkout
-        const qrId = linkedQrIds[`${selectedProduct.id}_0`];
-        if (!qrId) {
-          setOrdering(false);
-          return toast.error('Please select a QR profile to link');
+        for (let i = 0; i < singleProductQty; i++) {
+          await addDoc(collection(db, 'orders'), {
+            orderId: `${Date.now()}-${selectedProduct.id}-${i}`,
+            userId: user.uid,
+            productType: selectedProduct.id,
+            qrId: 'unlinked',
+            status: 'pending',
+            amount: selectedProduct.price,
+            dropzone: selectedDropzone,
+            createdAt: serverTimestamp(),
+          });
         }
-        await addDoc(collection(db, 'orders'), {
-          orderId: `${Date.now()}`,
-          userId: user.uid,
-          productType: selectedProduct.id,
-          qrId: qrId,
-          status: 'pending',
-          amount: selectedProduct.price,
-          createdAt: serverTimestamp(),
-        });
       } else {
         // Cart Checkout
-        // Validate all items have a QR selected if required
-        const allLinked = cart.every((item, itemIdx) => {
-           for (let i = 0; i < item.quantity; i++) {
-              if (!linkedQrIds[`${item.id}_${i}`]) return false;
-           }
-           return true;
-        });
-
-        if (!allLinked) {
-           setOrdering(false);
-           return toast.error('Please link a digital profile for every item');
-        }
-
         for (const item of cart) {
           for (let i = 0; i < item.quantity; i++) {
             await addDoc(collection(db, 'orders'), {
               orderId: `${Date.now()}-${item.id}-${i}`,
               userId: user.uid,
               productType: item.id,
-              qrId: linkedQrIds[`${item.id}_${i}`] || 'unlinked',
+              qrId: 'unlinked',
               status: 'pending',
               amount: item.price, // Amount per unit
+              dropzone: selectedDropzone,
               createdAt: serverTimestamp(),
             });
           }
         }
         clearCart();
       }
-      
+
       toast.success('Secure order placed successfully! 🎉');
       router.push('/dashboard');
     } catch (err) {
@@ -118,13 +103,18 @@ export default function CheckoutPage() {
     }
   };
 
-  const currentTotal = selectedProduct ? selectedProduct.price : cartTotal;
+  const currentTotal = selectedProduct ? selectedProduct.price * singleProductQty : cartTotal;
   const shipping = currentTotal >= 150 ? 0 : 80;
   const finalTotal = currentTotal + shipping;
   const items = selectedProduct ? [selectedProduct] : cart;
 
-  if (items.length === 0 && !loadingQrs) {
-    router.replace('/shop');
+  useEffect(() => {
+    if (items.length === 0) {
+      router.replace('/shop');
+    }
+  }, [items.length, router]);
+
+  if (items.length === 0) {
     return null;
   }
 
@@ -150,9 +140,8 @@ export default function CheckoutPage() {
             </h2>
             <div className="space-y-4">
               {items.map((item, idx) => {
-                const quantity = item.quantity || 1;
-                const units = Array.from({ length: quantity });
-                
+                const quantity = selectedProduct ? singleProductQty : (item.quantity || 1);
+
                 return (
                   <div key={idx} className="space-y-3 pb-6 border-b border-gray-50 last:border-0 last:pb-0">
                     <div className="flex gap-6 p-4 rounded-2xl bg-gray-50 border border-gray-100">
@@ -161,85 +150,116 @@ export default function CheckoutPage() {
                       </div>
                       <div className="flex-1">
                         <div className="flex justify-between items-start">
-                           <h3 className="font-bold text-gray-900">{item.name}</h3>
-                           <span className="font-bold text-blue-800">₹{(item.price * quantity).toFixed(2)}</span>
+                          <h3 className="font-bold text-gray-900">{item.name}</h3>
+                          <span className="font-bold text-blue-800">₹{(item.price * quantity).toFixed(2)}</span>
                         </div>
                         <p className="text-xs text-gray-500 mt-1">Premium Returnji QR Hardware</p>
-                        <div className="mt-3">
-                           <span className="text-xs font-bold bg-white px-3 py-1 rounded-full text-gray-500 border border-gray-100">Qty: {quantity}</span>
+                        <div className="mt-3 flex items-center gap-2 bg-white rounded-xl p-1 border border-gray-100 w-fit">
+                          <button
+                            onClick={() => selectedProduct ? setSingleProductQty(Math.max(1, singleProductQty - 1)) : updateQuantity(item.id, -1)}
+                            className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-50 transition-all text-gray-500"
+                          >
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <span className="text-sm font-bold w-6 text-center text-gray-900">{quantity}</span>
+                          <button
+                            onClick={() => selectedProduct ? setSingleProductQty(singleProductQty + 1) : updateQuantity(item.id, 1)}
+                            className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-50 transition-all text-gray-500"
+                          >
+                            <Plus className="w-3 h-3" />
+                          </button>
                         </div>
                       </div>
                     </div>
-                    
-                    {/* QR Profile Selection for each unit */}
-                    <div className="grid grid-cols-1 gap-3 pl-4 border-l-2 border-blue-50 ml-10">
-                      <div className="flex items-center gap-2 mb-1">
-                         <QrCode className="w-3.5 h-3.5 text-blue-600" />
-                         <span className="text-xs font-bold text-gray-900">Link Digital Profiles</span>
-                      </div>
-                      {units.map((_, unitIdx) => {
-                        const unitKey = `${item.id}_${unitIdx}`;
-                        return (
-                          <div key={unitKey} className="flex flex-col gap-1.5 bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
-                            <label className="text-[9px] font-black text-gray-400 uppercase tracking-[0.15em] px-1">
-                              Target Profile for {quantity > 1 ? `Unit #${unitIdx + 1}` : 'this item'}
-                            </label>
-                            <div className="relative">
-                              <select
-                                required
-                                value={linkedQrIds[unitKey] || ''}
-                                onChange={e => setLinkedQrIds(prev => ({ ...prev, [unitKey]: e.target.value }))}
-                                className="w-full bg-gray-50/50 border border-gray-200 text-gray-900 rounded-lg py-2.5 px-3 appearance-none text-[13px] font-bold focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all cursor-pointer pr-10"
-                              >
-                                <option value="" disabled>Select Profile...</option>
-                                <option value="unlinked">Link Later (Generic Tag)</option>
-                                {qrs.map(qr => (
-                                  <option key={qr.id} value={qr.id}>
-                                    {qr.itemName} ({qr.category.toUpperCase()})
-                                  </option>
-                                ))}
-                              </select>
-                              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                                 </svg>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
+
                   </div>
                 );
               })}
             </div>
           </div>
 
+          {/* Delivery Options */}
+          <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-xl shadow-blue-900/5">
+            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+              <MapPin className="w-5 h-5 text-red-500" /> Delivery Options
+            </h2>
+
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-gray-900">Are you currently studying in Parul University?</h3>
+                <p className="text-xs text-gray-500">We currently only deliver within the campus.</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="sr-only peer"
+                  checked={isParulStudent}
+                  onChange={(e) => setIsParulStudent(e.target.checked)}
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#3b5034]"></div>
+              </label>
+            </div>
+
+            {isParulStudent ? (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-2">Select Dropzone</label>
+                  <select
+                    value={selectedDropzone}
+                    onChange={(e) => setSelectedDropzone(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#3b5034] focus:border-transparent transition-all bg-white"
+                  >
+                    <option value="" disabled>Choose a dropzone...</option>
+                    {dropzones.map(dz => (
+                      <option key={dz.id} value={dz.id}>{dz.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="bg-green-50 p-4 rounded-xl border border-green-100">
+                  <p className="text-xs text-green-800 font-medium">
+                    You will collect your order from the selected dropzone. The time and date for collection will be messaged to you once your order is ready.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-red-50 p-4 rounded-xl border border-red-100 text-center">
+                <p className="text-sm font-bold text-red-600 mb-1">Delivery Not Available</p>
+                <p className="text-xs text-red-500">We currently only support orders for Parul University students. We will notify you when we expand.</p>
+              </div>
+            )}
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-             <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
-                <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                   <ShieldCheck className="w-4 h-4 text-emerald-500" /> Buyer Protection
-                </h3>
-                <p className="text-xs text-gray-500 leading-relaxed">
-                   Your purchase is secured with Returnji 256-bit encryption. We ensure 100% genuine hardware.
-                </p>
-             </div>
-             <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
-                <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                   <Package className="w-4 h-4 text-orange-500" /> Express Delivery
-                </h3>
-                <p className="text-xs text-gray-500 leading-relaxed">
-                   Free shipping on all Returnji hardware. Delivery within 3-5 business days nationwide.
-                </p>
-             </div>
+            <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
+              <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-emerald-500" /> Buyer Protection
+              </h3>
+              <p className="text-xs text-gray-500 leading-relaxed">
+                Your purchase is secured with Returnji 256-bit encryption. We ensure 100% genuine hardware.
+              </p>
+            </div>
+            <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
+              <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <Package className="w-4 h-4 text-orange-500" /> Express Delivery
+              </h3>
+              <p className="text-xs text-gray-500 leading-relaxed">
+                Free shipping on all Returnji hardware. Delivery within 3-5 business days nationwide.
+              </p>
+            </div>
           </div>
         </div>
 
         {/* Payment Summary */}
         <div className="lg:col-span-1 sticky top-24">
           <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-2xl shadow-blue-900/10">
-            <h2 className="text-xl font-bold text-gray-900 mb-8">Payment Summary</h2>
-            
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Payment Summary</h2>
+
+            <div className="bg-gray-50 rounded-2xl p-4 mb-6 border border-gray-100/50">
+              <p className="text-[11px] text-gray-500 leading-normal text-center">
+                🚚 <span className="font-bold text-gray-700">Shipping Policy</span>: Free shipping on orders of <span className="font-bold text-[#3b5034]">₹150</span> and above. Under ₹150, shipping is <span className="font-bold text-gray-700">₹80</span>.
+              </p>
+            </div>
+
             <div className="space-y-4 mb-8">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500 font-medium">Subtotal</span>
@@ -255,14 +275,14 @@ export default function CheckoutPage() {
               </div>
               <div className="pt-6 border-t border-gray-50 flex justify-between items-end">
                 <span className="text-lg font-bold text-gray-900">Total Amount</span>
-                <span className="text-3xl font-black text-[#0f4bb9]">₹{finalTotal.toFixed(2)}</span>
+                <span className="text-3xl font-black text-[#3b5034]">₹{finalTotal.toFixed(2)}</span>
               </div>
             </div>
 
-            <button 
+            <button
               onClick={handlePlaceOrder}
-              disabled={ordering || (selectedProduct && !linkedQrIds[`${selectedProduct.id}_0`])}
-              className="w-full bg-[#0f4bb9] text-white py-5 rounded-[1.5rem] font-bold shadow-xl shadow-blue-900/20 hover:shadow-2xl hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50"
+              disabled={ordering}
+              className="w-full bg-[#3b5034] text-white py-5 rounded-[1.5rem] font-bold shadow-xl shadow-blue-900/20 hover:shadow-2xl hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50"
             >
               {ordering ? (
                 'Processing...'
@@ -272,13 +292,13 @@ export default function CheckoutPage() {
                 </>
               )}
             </button>
-            
+
             <div className="mt-8 pt-8 border-t border-gray-50">
-               <div className="flex items-center justify-center gap-4 opacity-40 grayscale hover:grayscale-0 transition-all">
-                  <span className="font-black text-xl italic text-gray-900">VISA</span>
-                  <span className="font-black text-xl italic text-gray-900">UPI</span>
-                  <span className="font-black text-xl italic text-gray-900">RuPay</span>
-               </div>
+              <div className="flex items-center justify-center gap-4 opacity-40 grayscale hover:grayscale-0 transition-all">
+                <span className="font-black text-xl italic text-gray-900">VISA</span>
+                <span className="font-black text-xl italic text-gray-900">UPI</span>
+                <span className="font-black text-xl italic text-gray-900">RuPay</span>
+              </div>
             </div>
           </div>
         </div>

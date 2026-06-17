@@ -9,31 +9,71 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        white: '#ede8de',
+        blue: {
+          50: '#f0f4ef',
+          100: '#d7e2d4',
+          200: '#b2c7ab',
+          300: '#85a47c',
+          400: '#5e8253',
+          500: '#3b5034',
+          600: '#2d3e28',
+          700: '#23301f',
+          800: '#192216',
+          900: '#0f140d',
+          950: '#080a06',
+        },
+        gray: {
+          50: '#f9f9f8',
+          100: '#f2f0ea',
+          200: '#ede8de',
+          300: '#d4cebf',
+          400: '#b5ae9c',
+          500: '#948d79',
+          600: '#736b56',
+          700: '#5c5443',
+          800: '#3b5034',
+          900: '#293624',
+          950: '#1e261a',
+        },
+        slate: {
+          50: '#f9f9f8',
+          100: '#f2f0ea',
+          200: '#ede8de',
+          300: '#d4cebf',
+          400: '#b5ae9c',
+          500: '#948d79',
+          600: '#736b56',
+          700: '#5c5443',
+          800: '#3b5034',
+          900: '#293624',
+          950: '#1e261a',
+        },
         primary: {
-          50:  '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
+          50: '#f0f4ef',
+          100: '#d7e2d4',
+          200: '#b2c7ab',
+          300: '#85a47c',
+          400: '#5e8253',
+          500: '#3b5034',
+          600: '#2d3e28',
+          700: '#23301f',
+          800: '#192216',
+          900: '#0f140d',
         },
         ghost: {
-          900: '#F8FAFC', // Layout Background
-          800: '#FFFFFF', // Card Background
-          700: '#F1F5F9', // Subtle Backgrounds
-          600: '#E2E8F0', // Borders
-          500: '#94A3B8', // Muted Text
-          400: '#64748B', // Secondary Text
-          300: '#475569', // Gray Text
-          200: '#1E293B', // Heading Text
-          100: '#0F172A', // Darkest Text
-          accent: '#2563eb', // Core Blue
-          'accent-light': '#60a5fa',
-          'accent-glow': 'rgba(37, 99, 235, 0.15)',
+          900: '#ede8de', // Layout Background
+          800: '#ede8de', // Card Background
+          700: '#d4cebf', // Subtle Backgrounds
+          600: '#b5ae9c', // Borders
+          500: '#948d79', // Muted Text
+          400: '#736b56', // Secondary Text
+          300: '#5c5443', // Gray Text
+          200: '#3b5034', // Heading Text
+          100: '#293624', // Darkest Text
+          accent: '#3b5034', // Core
+          'accent-light': '#5e8253',
+          'accent-glow': 'rgba(59, 80, 52, 0.15)',
           gold: '#F59E0B',
           success: '#10B981',
           danger: '#EF4444',
@@ -41,7 +81,7 @@ module.exports = {
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'ghost-gradient': 'linear-gradient(135deg, #2563eb 0%, #3b82f6 60%, #60a5fa 100%)',
+        'ghost-gradient': 'linear-gradient(135deg, #3b5034 0%, #5e8253 60%, #85a47c 100%)',
       },
       animation: {
         'fade-in': 'fadeIn 0.3s ease-in-out',
@@ -58,8 +98,8 @@ module.exports = {
           '100%': { opacity: '1', transform: 'translateX(0)' },
         },
         pulseGlow: {
-          '0%, 100%': { boxShadow: '0 0 8px #3b82f655' },
-          '50%': { boxShadow: '0 0 24px #3b82f699' },
+          '0%, 100%': { boxShadow: '0 0 8px #5e825355' },
+          '50%': { boxShadow: '0 0 24px #5e825399' },
         },
       },
     },

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { collection, query, where, onSnapshot, deleteDoc, doc, writeBatch, getDocs } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, deleteDoc, doc, writeBatch, getDocs, updateDoc } from 'firebase/firestore';
 import toast from 'react-hot-toast';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
@@ -14,7 +14,8 @@ const statusBadge = (status) => {
     created: 'bg-blue-100 text-blue-700', 
     printed: 'bg-yellow-100 text-yellow-700', 
     active: 'bg-emerald-100 text-emerald-700', 
-    found: 'bg-purple-100 text-purple-700' 
+    found: 'bg-purple-100 text-purple-700',
+    lost: 'bg-red-100 text-red-700'
   };
   return (
     <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${map[status] || 'bg-gray-100 text-gray-700'}`}>
@@ -29,6 +30,17 @@ export default function AssetsPage() {
   const [loadingQrs, setLoadingQrs] = useState(true);
   const [openMenuId, setOpenMenuId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+
+  const toggleLostStatus = async (qrId, currentStatus) => {
+    try {
+      const newStatus = currentStatus === 'lost' ? 'active' : 'lost';
+      await updateDoc(doc(db, 'qrcodes', qrId), { status: newStatus });
+      toast.success(newStatus === 'lost' ? 'Asset marked as lost' : 'Asset marked as active');
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to update status');
+    }
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -116,20 +128,11 @@ export default function AssetsPage() {
           filteredQrs.map(qr => (
             <div key={qr.id} className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col gap-4 group">
               <div className="flex items-start justify-between">
-                <div className="w-16 h-16 rounded-full bg-gray-50 flex flex-col items-center justify-center overflow-hidden flex-shrink-0 border border-gray-100 shadow-inner group-hover:scale-110 transition-transform duration-500">
-                  {qr.photoUrl ? (
-                    <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url(${qr.photoUrl})` }} />
-                  ) : (
-                    <div className="scale-[0.8]">
-                      <CircularQR value={`https://returnji-web.vercel.app/scan/${qr.id}`} size={64} />
-                    </div>
-                  )}
-                </div>
+                <h3 className="font-bold text-lg text-gray-900 truncate mb-1">{qr.itemName || 'Unnamed Asset'}</h3>
                 {statusBadge(qr.status)}
               </div>
               
               <div>
-                <h3 className="font-bold text-lg text-gray-900 truncate mb-1">{qr.itemName || 'Unnamed Asset'}</h3>
                 <div className="flex items-center justify-between">
                   <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">{qr.category}</p>
                   {qr.reward > 0 && (
@@ -146,47 +149,22 @@ export default function AssetsPage() {
                 </p>
               )}
 
-              <div className="flex items-center gap-3 mt-auto pt-4 border-t border-gray-50">
-                {qr.status === 'created' ? (
-                  <Link href="/shop" className="flex-1 text-center bg-blue-50 text-blue-700 px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-blue-100 transition-colors">
-                    Order Tag
-                  </Link>
-                ) : (
-                  <button className="flex-1 bg-gray-50 text-gray-700 px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-100 transition-colors border border-gray-100">
-                    Edit Details
-                  </button>
-                )}
-                <div className="relative">
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setOpenMenuId(openMenuId === qr.id ? null : qr.id);
-                    }}
-                    className="p-2.5 text-gray-400 hover:text-gray-700 hover:bg-gray-50 rounded-xl transition-all border border-transparent hover:border-gray-100"
-                  >
-                    <MoreVertical className="w-4 h-4" />
-                  </button>
-
-                  {openMenuId === qr.id && (
-                    <>
-                      <div className="fixed inset-0 z-10" onClick={() => setOpenMenuId(null)} />
-                      <div className="absolute right-0 bottom-full mb-2 w-36 bg-white border border-gray-100 rounded-2xl shadow-xl z-20 overflow-hidden py-1.5 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                        <button
-                          onClick={() => {
-                            handleDeleteQR(qr.id);
-                            setOpenMenuId(null);
-                          }}
-                          className="w-full text-left px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
-                        >
-                          <svg className="w-3.5 h-3.5 rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                          </svg>
-                          Delete Asset
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
+              <div className="mt-auto pt-4 border-t border-gray-50">
+                <label className="flex items-center cursor-pointer">
+                  <div className="relative">
+                    <input 
+                      type="checkbox" 
+                      className="sr-only" 
+                      checked={qr.status === 'lost'} 
+                      onChange={() => toggleLostStatus(qr.id, qr.status)} 
+                    />
+                    <div className={`block w-10 h-6 rounded-full transition-colors ${qr.status === 'lost' ? 'bg-red-500' : 'bg-gray-200'}`}></div>
+                    <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${qr.status === 'lost' ? 'transform translate-x-4' : ''}`}></div>
+                  </div>
+                  <div className="ml-3 text-sm font-bold text-gray-500 uppercase tracking-wider">
+                    {qr.status === 'lost' ? 'Marked as Lost' : 'Mark as Lost'}
+                  </div>
+                </label>
               </div>
             </div>
           ))

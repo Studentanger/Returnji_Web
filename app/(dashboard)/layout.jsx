@@ -10,6 +10,8 @@ import { collection, query, where, orderBy, limit, onSnapshot, getDocs, updateDo
 import { db } from '@/lib/firebase';
 import Link from 'next/link';
 import clsx from 'clsx';
+import BottomNav from '@/components/BottomNav';
+import { Settings } from 'lucide-react';
 
 export default function DashboardLayout({ children }) {
   const { user, userData, loading, logout } = useAuth();
@@ -112,11 +114,16 @@ export default function DashboardLayout({ children }) {
     <div className="flex h-screen bg-ghost-900 overflow-hidden font-sans">
       <Sidebar />
       
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 pb-[70px] lg:pb-0">
         {/* Top Header */}
-        <header className="h-16 flex items-center justify-end px-8 bg-white/80 backdrop-blur-md border-b border-ghost-600 sticky top-0 z-30">
+        <header className="h-16 flex items-center justify-between px-4 lg:px-8 bg-white/80 backdrop-blur-md border-b border-ghost-600 sticky top-0 z-30">
           
-          <div className="flex items-center gap-6 ml-4">
+          {/* Logo for mobile */}
+          <div className="flex items-center lg:hidden">
+            <img src="/logo.png" alt="Logo" className="h-8 object-contain" />
+          </div>
+
+          <div className="flex items-center gap-4 lg:gap-6 ml-auto">
             {/* Notifications Icon + Dropdown */}
             <div 
               className="relative"
@@ -124,7 +131,13 @@ export default function DashboardLayout({ children }) {
               onMouseLeave={() => !isMobile && setShowNotifDropdown(false)}
             >
               <div 
-                onClick={() => setIsMobile && setShowNotifDropdown(!showNotifDropdown)}
+                onClick={() => {
+                  if (isMobile) {
+                    router.push('/notifications');
+                  } else {
+                    setShowNotifDropdown(!showNotifDropdown);
+                  }
+                }}
                 className="relative cursor-pointer hover:text-blue-600 transition-colors"
               >
                 <Bell className="w-5 h-5 text-gray-500" />
@@ -135,9 +148,9 @@ export default function DashboardLayout({ children }) {
                 )}
               </div>
 
-              {showNotifDropdown && (
+              {!isMobile && showNotifDropdown && (
                 <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-100 rounded-3xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300">
-                  <div className="bg-[#0f4bb9] px-6 py-5 text-white flex items-center justify-between">
+                  <div className="bg-[#3b5034] px-6 py-5 text-white flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
                         <Bell className="w-4 h-4" />
@@ -179,7 +192,7 @@ export default function DashboardLayout({ children }) {
                     )}
                   </div>
                   
-                  <Link href="/notifications" className="block text-center py-4 text-xs font-bold text-[#0f4bb9] hover:bg-gray-50 transition-colors border-t border-gray-50">
+                  <Link href="/notifications" className="block text-center py-4 text-xs font-bold text-[#3b5034] hover:bg-gray-50 transition-colors border-t border-gray-50">
                     See all notifications &rarr;
                   </Link>
                 </div>
@@ -195,7 +208,10 @@ export default function DashboardLayout({ children }) {
               )}
             </Link>
 
-            <HelpCircle className="w-5 h-5 text-gray-500 cursor-pointer hover:text-blue-600 transition-colors" />
+            <Link href="/settings" className="lg:hidden relative cursor-pointer hover:text-blue-600 transition-colors">
+              <Settings className="w-5 h-5 text-gray-500" />
+            </Link>
+
 
             {/* Profile Dropdown */}
             <div 
@@ -221,7 +237,7 @@ export default function DashboardLayout({ children }) {
 
               {showUserDropdown && (
                 <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-100 rounded-[2.5rem] shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300">
-                  <div className="bg-[#0f4bb9] px-8 py-8 text-white relative flex flex-col items-center">
+                  <div className="bg-[#3b5034] px-8 py-8 text-white relative flex flex-col items-center">
                     <div className="w-20 h-20 rounded-[1.5rem] bg-white/20 border-2 border-white/20 flex items-center justify-center mb-4 transition-transform hover:scale-105 duration-500 p-4">
                        <User size={40} className="text-white" />
                     </div>
@@ -258,7 +274,7 @@ export default function DashboardLayout({ children }) {
                     <Link 
                       href="/profile" 
                       onClick={() => setShowUserDropdown(false)}
-                      className="w-full bg-[#0f4bb9] text-white py-3.5 rounded-2xl font-bold shadow-lg shadow-blue-900/10 hover:shadow-xl hover:scale-[1.02] flex items-center justify-center gap-2 transition-all active:scale-95 mb-4"
+                      className="w-full bg-[#3b5034] text-white py-3.5 rounded-2xl font-bold shadow-lg shadow-blue-900/10 hover:shadow-xl hover:scale-[1.02] flex items-center justify-center gap-2 transition-all active:scale-95 mb-4"
                     >
                       <User size={16} /> Go to Profile
                     </Link>
@@ -281,6 +297,7 @@ export default function DashboardLayout({ children }) {
           {children}
         </main>
       </div>
+      <BottomNav />
     </div>
   );
 }

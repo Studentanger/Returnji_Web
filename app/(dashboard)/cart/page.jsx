@@ -5,9 +5,11 @@ import { ShoppingBag, ArrowLeft, Trash2, Plus, Minus, CreditCard, ShieldCheck } 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
+import { products } from '@/lib/products';
 
 export default function CartPage() {
-  const { cart, removeFromCart, updateQuantity, cartTotal, cartCount } = useCart();
+  const { cart, removeFromCart, updateQuantity, cartTotal, cartCount, addToCart } = useCart();
+  const suggestions = products.filter(p => !cart.some(c => c.id === p.id)).slice(0, 2);
   const router = useRouter();
   const shipping = cartTotal >= 150 ? 0 : 80;
   const finalTotal = cartTotal + shipping;
@@ -20,7 +22,7 @@ export default function CartPage() {
         </div>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Your cart is empty</h1>
         <p className="text-gray-500 mb-8 max-w-sm mx-auto">Looks like you haven't added any Ghost tags to your cart yet. Secure your valuables today!</p>
-        <Link href="/shop" className="inline-flex items-center gap-2 bg-[#0f4bb9] text-white px-8 py-3.5 rounded-2xl font-bold shadow-lg shadow-blue-900/10 hover:shadow-xl hover:scale-[1.02] transition-all active:scale-95">
+        <Link href="/shop" className="inline-flex items-center gap-2 bg-[#3b5034] text-white px-8 py-3.5 rounded-2xl font-bold shadow-lg shadow-blue-900/10 hover:shadow-xl hover:scale-[1.02] transition-all active:scale-95">
           <ArrowLeft className="w-4 h-4" /> Continue Shopping
         </Link>
       </div>
@@ -67,11 +69,44 @@ export default function CartPage() {
                       <Plus className="w-3 h-3" />
                     </button>
                   </div>
-                  <span className="font-bold text-[#0f4bb9]">₹{(item.price * item.quantity).toFixed(2)}</span>
+                  <span className="font-bold text-[#3b5034]">₹{(item.price * item.quantity).toFixed(2)}</span>
                 </div>
               </div>
             </div>
           ))}
+
+          {suggestions.length > 0 && (
+            <div className="mt-10 mb-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-6">You might also like</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {suggestions.map((product) => (
+                  <div key={product.id} className="bg-white rounded-3xl p-4 border border-gray-100 shadow-sm flex flex-col gap-4 hover:border-gray-200 transition-all">
+                    <div className="h-40 rounded-2xl bg-gray-50 flex-shrink-0 overflow-hidden relative">
+                      <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                    </div>
+                    
+                    <div className="flex-1 flex flex-col min-w-0">
+                      <h3 className="font-bold text-gray-900 truncate mb-1">{product.name}</h3>
+                      <p className="text-xs text-gray-500 mb-3 line-clamp-2">{product.description}</p>
+                      
+                      <div className="flex items-center justify-between mt-auto">
+                        <span className="font-bold text-[#3b5034]">₹{product.price.toFixed(2)}</span>
+                        <button 
+                          onClick={() => {
+                            addToCart(product);
+                            toast.success('Added to cart');
+                          }} 
+                          className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-xs font-bold transition-colors"
+                        >
+                          Add
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Order Summary */}
@@ -81,7 +116,7 @@ export default function CartPage() {
             
             <div className="bg-gray-50 rounded-2xl p-4 mb-6 border border-gray-100/50">
               <p className="text-[11px] text-gray-500 leading-normal text-center">
-                🚚 <span className="font-bold text-gray-700">Shipping Policy</span>: Free shipping on orders of <span className="font-bold text-[#0f4bb9]">₹150</span> and above. Under ₹150, shipping is <span className="font-bold text-gray-700">₹80</span>.
+                🚚 <span className="font-bold text-gray-700">Shipping Policy</span>: Free shipping on orders of <span className="font-bold text-[#3b5034]">₹150</span> and above. Under ₹150, shipping is <span className="font-bold text-gray-700">₹80</span>.
               </p>
             </div>
 
@@ -101,7 +136,7 @@ export default function CartPage() {
                 </div>
                 {shipping > 0 ? (
                   <p className="text-[10px] text-gray-400 font-semibold text-right">
-                    Add <span className="text-[#0f4bb9]">₹{(150 - cartTotal).toFixed(2)}</span> more for Free Shipping!
+                    Add <span className="text-[#3b5034]">₹{(150 - cartTotal).toFixed(2)}</span> more for Free Shipping!
                   </p>
                 ) : (
                   <p className="text-[10px] text-emerald-600 font-semibold text-right">
@@ -111,13 +146,13 @@ export default function CartPage() {
               </div>
               <div className="pt-4 flex justify-between">
                 <span className="text-lg font-bold text-gray-900">Total</span>
-                <span className="text-2xl font-black text-[#0f4bb9]">₹{finalTotal.toFixed(2)}</span>
+                <span className="text-2xl font-black text-[#3b5034]">₹{finalTotal.toFixed(2)}</span>
               </div>
             </div>
 
             <button 
               onClick={() => router.push('/checkout')}
-              className="w-full bg-[#0f4bb9] text-white py-4 rounded-2xl font-bold shadow-lg shadow-blue-900/20 hover:shadow-xl hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-3 mb-6"
+              className="w-full bg-[#3b5034] text-white py-4 rounded-2xl font-bold shadow-lg shadow-blue-900/20 hover:shadow-xl hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-3 mb-6"
             >
               <CreditCard className="w-5 h-5" /> Checkout Now
             </button>

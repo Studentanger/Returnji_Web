@@ -58,14 +58,13 @@ export default function Sidebar() {
     <div className="flex flex-col h-full bg-white border-r border-ghost-600">
       {/* Brand Logo */}
       <div className={clsx(
-        'flex flex-col p-6 pb-4',
+        'flex flex-col p-6 pb-4 pt-16 lg:pt-6', // Added pt-16 for mobile to clear the close button
         collapsed && 'items-center px-2'
       )}>
         <div className="flex items-center gap-2">
           {!collapsed && (
-            <div className="flex flex-col">
-              <span className="text-xl font-bold text-blue-800 tracking-tight leading-none">Returnji</span>
-              <span className="text-[10px] text-gray-500 font-medium lowercase tracking-widest">Digital Concierge</span>
+            <div className="flex flex-col w-full overflow-hidden">
+              <img src="/logo.png" alt="Returnji Logo" className="h-16 w-full object-contain object-left" />
             </div>
           )}
         </div>
@@ -75,17 +74,20 @@ export default function Sidebar() {
       <nav className="flex-1 px-4 py-4 space-y-1">
         {items.map(({ href, icon: Icon, label }) => {
           const active = pathname === href || pathname.startsWith(href + '/');
+          const isMainPage = ['Dashboard', 'Chats', 'Shop', 'Dropzones', 'Profile'].includes(label);
+          
           return (
             <Link
               key={href}
               href={href}
               onClick={() => setMobileOpen(false)}
               className={clsx(
-                'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group',
+                'items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group',
                 active
                   ? 'bg-blue-50 text-blue-600 font-semibold'
                   : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900',
-                collapsed && 'justify-center px-0'
+                collapsed && 'justify-center px-0',
+                isMainPage ? 'hidden lg:flex' : 'flex'
               )}
               title={collapsed ? label : undefined}
             >
@@ -94,12 +96,12 @@ export default function Sidebar() {
               {label === 'Notifications' && active && !collapsed && (
                 <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-600" />
               )}
-              {label === 'Cart' && cartCount > 0 && !collapsed && (
+              {label === 'Shop' && cartCount > 0 && !collapsed && (
                 <div className="ml-auto bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
                   {cartCount}
                 </div>
               )}
-              {label === 'Cart' && cartCount > 0 && collapsed && (
+              {label === 'Shop' && cartCount > 0 && collapsed && (
                 <div className="absolute top-1 right-2 w-4 h-4 bg-blue-600 text-white text-[9px] font-black flex items-center justify-center rounded-full border-2 border-white">
                   {cartCount > 9 ? '9+' : cartCount}
                 </div>
@@ -147,30 +149,7 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Mobile toggle button */}
-      <button
-        className="lg:hidden fixed top-4 left-4 z-50 w-10 h-10 rounded-xl bg-white border border-gray-200 shadow-sm flex items-center justify-center text-gray-600 hover:text-gray-900"
-        onClick={() => setMobileOpen(!mobileOpen)}
-      >
-        {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-      </button>
 
-      {/* Mobile overlay */}
-      {mobileOpen && (
-        <div
-          className="lg:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
-          onClick={() => setMobileOpen(false)}
-        />
-      )}
-
-      {/* Mobile sidebar */}
-      <aside className={clsx(
-        'lg:hidden fixed left-0 top-0 bottom-0 z-40 w-64',
-        'transform transition-transform duration-300',
-        mobileOpen ? 'translate-x-0' : '-translate-x-full'
-      )}>
-        <SidebarContent />
-      </aside>
 
       {/* Desktop sidebar */}
       <aside
