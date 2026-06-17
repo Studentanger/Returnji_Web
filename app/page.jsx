@@ -29,7 +29,7 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="px-6 md:px-12 lg:px-24 py-12 md:py-20 flex flex-col md:flex-row items-center gap-12 relative overflow-hidden">
+      <section className="px-6 md:px-12 lg:px-24 pt-12 pb-0 md:py-20 flex flex-col md:flex-row items-center gap-6 md:gap-12 relative overflow-hidden">
         <div className="w-full md:w-1/2 z-10">
           <h1 className="text-6xl md:text-8xl lg:text-9xl font-black leading-none uppercase tracking-tighter text-[#3b5034]">
             Lost<br />Something
@@ -38,19 +38,13 @@ export default function LandingPage() {
             Get your lost item back at your doorstep
           </p>
         </div>
-        <div className="w-full md:w-1/2 relative h-[400px] md:h-[600px] z-10 flex justify-center items-center">
-          {/* Abstract green starburst element behind keychain */}
-          {/* <div className="absolute top-1/2 left-0 transform -translate-y-1/2 -z-10 text-[#3b5034]">
-             <svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-48 h-48 opacity-80">
-                <path d="M100 0L109 85L195 50L125 110L190 185L100 135L10 185L75 110L5 50L91 85L100 0Z" fill="currentColor"/>
-             </svg>
-          </div> */}
+        <div className="w-full md:w-1/2 relative h-auto md:h-[600px] z-10 flex justify-center items-center py-6 md:py-0">
           <img src="/landing-01.png" alt="Returnji Keychain" className="w-3/4 md:w-full max-w-lg object-contain transform rotate-12 hover:rotate-0 transition-transform duration-500 drop-shadow-2xl" />
         </div>
       </section>
 
       {/* What is Returnji Section */}
-      <section className="bg-[#3b5034] text-[#ede8de] px-6 md:px-12 lg:px-24 py-16 md:py-24 rounded-t-[3rem] mt-12 flex flex-col md:flex-row items-center gap-16">
+      <section className="bg-[#3b5034] text-[#ede8de] px-6 md:px-12 lg:px-24 py-16 md:py-24 rounded-t-[3rem] mt-4 md:mt-12 flex flex-col md:flex-row items-center gap-16">
         <div className="w-full md:w-1/2">
           <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tight mb-8">
             What is<br />Returnji?
@@ -69,7 +63,7 @@ export default function LandingPage() {
         <div className="flex items-center gap-6 mb-16 justify-center">
           <svg className="w-12 h-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6" /><path d="M10 22h4" /><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14" /></svg>
           <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tight text-center">
-            What Are The<br />Key Benefits?
+            What Are<br />The Key Benefits?
           </h2>
         </div>
 
@@ -100,9 +94,9 @@ export default function LandingPage() {
 
       {/* FAQ Section */}
       <section className="bg-[#3b5034] px-6 md:px-12 lg:px-24 py-20 md:py-32 flex flex-col md:flex-row gap-16 items-start rounded-b-[3rem]">
-        <div className="w-full md:w-1/3 flex flex-col items-center md:items-start">
-          <h2 className="text-6xl md:text-8xl font-black text-[#ede8de] uppercase ml-20 tracking-tighter mb-2">FAQS</h2>
-          <img src="/landing-06.png" alt="Returnji Sticker" className="w-104 h-104 object-contain transform -rotate-6 drop-shadow-2xl" />
+        <div className="w-full md:w-1/3 flex flex-col items-center md:items-start text-center md:text-left">
+          <h2 className="text-6xl md:text-8xl font-black text-[#ede8de] uppercase md:ml-20 tracking-tighter mb-4">FAQS</h2>
+          <img src="/landing-06.png" alt="Returnji Sticker" className="w-64 md:w-96 object-contain transform -rotate-6 drop-shadow-2xl" />
         </div>
         <div className="w-full md:w-2/3">
           <FaqAccordion />

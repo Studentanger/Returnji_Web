@@ -185,7 +185,7 @@ export default function ProfilePage() {
                   value={firstName}
                   onChange={e => setFirstName(e.target.value)}
                   disabled={!editing}
-                  className="w-full bg-gray-50 border border-gray-300 shadow-sm rounded-xl py-3 px-4 text-gray-900 text-sm font-medium focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:bg-gray-100/50 disabled:border-gray-300/50 disabled:opacity-90 disabled:cursor-not-allowed transition-all"
+                  className="w-full bg-white border border-gray-300 shadow-sm rounded-xl py-3 px-4 text-gray-900 text-sm font-medium focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:bg-white/80 disabled:border-gray-300/50 disabled:opacity-90 disabled:cursor-not-allowed transition-all"
                   placeholder="Enter first name"
                 />
               </div>
@@ -196,7 +196,7 @@ export default function ProfilePage() {
                   value={lastName}
                   onChange={e => setLastName(e.target.value)}
                   disabled={!editing}
-                  className="w-full bg-gray-50 border border-gray-300 shadow-sm rounded-xl py-3 px-4 text-gray-900 text-sm font-medium focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:bg-gray-100/50 disabled:border-gray-300/50 disabled:opacity-90 disabled:cursor-not-allowed transition-all"
+                  className="w-full bg-white border border-gray-300 shadow-sm rounded-xl py-3 px-4 text-gray-900 text-sm font-medium focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:bg-white/80 disabled:border-gray-300/50 disabled:opacity-90 disabled:cursor-not-allowed transition-all"
                   placeholder="Enter last name"
                 />
               </div>
@@ -208,7 +208,7 @@ export default function ProfilePage() {
                 type="email"
                 value={user?.email || ''}
                 disabled
-                className="w-full bg-gray-50 border border-gray-300 shadow-sm rounded-xl py-3 px-4 text-gray-900 text-sm font-medium disabled:bg-gray-100/50 disabled:border-gray-300/50 disabled:opacity-90 disabled:cursor-not-allowed"
+                className="w-full bg-white border border-gray-300 shadow-sm rounded-xl py-3 px-4 text-gray-900 text-sm font-medium disabled:bg-white/80 disabled:border-gray-300/50 disabled:opacity-90 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -219,7 +219,7 @@ export default function ProfilePage() {
                 value={phone}
                 onChange={e => setPhone(e.target.value)}
                 disabled={!editing}
-                className="w-full bg-gray-50 border border-gray-300 shadow-sm rounded-xl py-3 px-4 text-gray-900 text-sm font-medium focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:bg-gray-100/50 disabled:border-gray-300/50 disabled:opacity-90 disabled:cursor-not-allowed transition-all"
+                className="w-full bg-white border border-gray-300 shadow-sm rounded-xl py-3 px-4 text-gray-900 text-sm font-medium focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:bg-white/80 disabled:border-gray-300/50 disabled:opacity-90 disabled:cursor-not-allowed transition-all"
                 placeholder="+44 20 7946 0123"
               />
             </div>
